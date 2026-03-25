@@ -1,0 +1,18 @@
+# Core Dependencies
+eel
+pyttsx3
+pywhatkit
+wikipedia
+pyautogui
+requests
+screen_brightness_control
+opencv-python
+deep-translator
+
+# Voice & Face
+SpeechRecognition
+PyAudio
+setuptools<71
+dlib-bin
+face_recognition_models
+face_recognition
