@@ -9,10 +9,11 @@ screen_brightness_control
 opencv-python
 deep-translator
 
-# Voice & Face
+# Voice & Face & Gestures
 SpeechRecognition
 PyAudio
 setuptools<71
 dlib-bin
 face_recognition_models
 face_recognition
+mediapipe

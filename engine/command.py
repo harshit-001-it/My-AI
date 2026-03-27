@@ -68,36 +68,38 @@ def execute_command(query):
         else:
             speak("What would you like me to look up?")
 
+    elif 'lock system' in query or 'secure workspace' in query:
+        speak("Securing your workspace, master. All systems locked.")
+        os.system("rundll32.exe user32.dll,LockWorkStation")
+
     elif 'screenshot' in query:
-        speak("Taking a screenshot")
+        speak("Capturing your screen session.")
         pyautogui.screenshot(f"screenshot_{os.urandom(2).hex()}.png")
+        speak("Screenshot saved.")
 
     elif 'volume up' in query:
-        speak("Turning volume up")
+        speak("Adjusting audio levels upward.")
         pyautogui.press("volumeup")
 
     elif 'volume down' in query:
-        speak("Turning volume down")
+        speak("Lowering audio levels.")
         pyautogui.press("volumedown")
 
     elif 'brightness' in query:
         if 'increase' in query:
-            speak("Increasing brightness")
+            speak("Enhancing display brightness.")
             current = sbc.get_brightness()
             sbc.set_brightness(min(100, current[0] + 10))
-            speak("Done.")
         elif 'decrease' in query:
-            speak("Decreasing brightness")
+            speak("Dimming display for comfort.")
             current = sbc.get_brightness()
             sbc.set_brightness(max(0, current[0] - 10))
-            speak("Done.")
 
     elif 'shutdown system' in query:
-        speak("Shutting down the system. Goodbye!")
-        os.system("shutdown /s /t 1")
+        speak("Initiating system termination protocol.")
+        os.system("shutdown /s /t 5")
 
     else:
-        # Fallback to chatbot for general conversation
         from engine.chatbot import get_response
         response = get_response(query)
         speak(response)

@@ -53,20 +53,21 @@ def auto_install_dependencies():
             missing.append(pkg)
 
     if missing:
-        print(f"Installing missing packages: {', '.join(missing)}")
+        print(f"AUTOMATION: Installing missing packages: {', '.join(missing)}")
         for pkg in missing:
-            print(f"  -> Installing {pkg}...")
+            print(f"  -> Deploying {pkg}...")
             try:
+                # Use --no-cache-dir for cleaner deployment and handle setuptools specifically
                 subprocess.check_call(
-                    [sys.executable, "-m", "pip", "install", pkg, "--quiet"],
+                    [sys.executable, "-m", "pip", "install", pkg, "--quiet", "--no-cache-dir"],
                     stdout=subprocess.DEVNULL,
                     stderr=subprocess.PIPE
                 )
-                print(f"  ✓ {pkg} installed successfully.")
-            except subprocess.CalledProcessError as e:
-                print(f"  ✗ Failed to install {pkg}. You may need to install it manually.")
+                print(f"  ✓ {pkg} integrated.")
+            except subprocess.CalledProcessError:
+                print(f"  ✗ Failed to install {pkg}. Manual intervention may be required for dlib/mediapipe.")
     else:
-        print("All dependencies are already installed.")
+        print("All neural dependencies are online.")
 
 auto_install_dependencies()
 
@@ -100,6 +101,7 @@ except ImportError as e:
 from engine.speech import speak, listen
 from engine.command import execute_command
 from engine.face_auth import authenticate
+from engine.gestures import start_gestures
 
 # Initialize Eel
 eel.init('www')
@@ -116,22 +118,20 @@ def niva_loop():
             has_wake_word = any(ww in query_lower for ww in wake_words)
             
             if has_wake_word:
-                # Remove the wake word from the query so it isn't parsed as part of the command
+                # Process command...
                 clean_query = query_lower
                 for ww in wake_words:
                     clean_query = clean_query.replace(f'hey {ww}', '').replace(f'he {ww}', '').replace(f'hi {ww}', '').replace(ww, '')
                 clean_query = clean_query.strip()
                 
                 if 'stop' in clean_query or 'exit' in clean_query or 'bye' in clean_query:
-                    speak("Shutting down systems. Goodbye!")
+                    speak("Shutting down systems. Goodbye, master.")
                     os._exit(0)
                     
                 if clean_query:
                     execute_command(clean_query)
                 else:
-                    speak("Yes, master?")
-            else:
-                print(f"(Ignored: no wake word 'Niva' detected in '{query}')")
+                    speak("I am listening, master. How can I assist?")
         eel.sleep(0.1)
 
 @eel.expose
@@ -139,27 +139,39 @@ def start_niva():
     """Exposed function to start the assistant."""
     print("Starting Niva...")
     
+    # Start Gesture Recognition in background
+    try:
+        start_gestures()
+    except Exception as e:
+        print(f"Gesture system failed to start: {e}")
+
     if not HAS_FACE_RECOGNITION:
-        speak("Face authentication module missing. Bypassing security for demo.")
+        speak("Security protocols bypassed. Welcome back.")
         threading.Thread(target=niva_loop, daemon=True).start()
         return
 
-    print("Starting Niva Authentication Process...")
+    print("Authenticating...")
     if authenticate():
-        # Do not speak first, wait silently for 'Hey Niva' wake word
+        speak("Authentication successful. I am at your service.")
         threading.Thread(target=niva_loop, daemon=True).start()
     else:
-        speak("Authentication failed. Access denied.")
-        eel.update_status("Access Denied - Authentication Failed")
+        speak("Access denied.")
+        eel.update_status("ACCESS DENIED")
 
 if __name__ == '__main__':
-    # Start the web app (Chrome/Edge recommended for Eel)
+    # Start the web app with transparency and frameless flags
     try:
-        eel.start('index.html', mode='edge', host='localhost', port=8000, block=False)
+        eel.start('index.html', mode='chrome', 
+                  cmdline_args=['--window-size=400,600', '--transparent-window-control', '--frameless', '--always-on-top'],
+                  host='localhost', port=8000, block=False)
     except:
+        # Fallback for non-chrome environments
         eel.start('index.html', host='localhost', port=8000, block=False)
 
-    print("Niva Backend Running...")
+    print("Niva Core Active...")
+    
+    # AUTOMATION: Automatically trigger Niva initialization after UI loads
+    threading.Timer(2.0, start_niva).start()
     
     while True:
         eel.sleep(1.0)

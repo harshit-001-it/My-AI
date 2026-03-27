@@ -1,7 +1,15 @@
 # PROJECT SYNOPSIS: Niva AI Assistant
 
 ## 🎯 Project Identity
-**Niva** is a personal AI assistant developed for Windows laptops. It combines voice interaction, facial security, and system automation to provide a "master-companion" experience.
+**Niva** is a highly intelligent, multimodal personal AI assistant. It is designed to behave like a Jarvis-style entity, capable of voice, gesture, and visual understanding.
+
+---
+
+## 📜 The Jarvis Mandate
+- **Multimodal**: Text, Voice, and Gesture recognition.
+- **Security**: Face/Voice/PIN authentication.
+- **Visuals**: A transparent, pulsing "Heartbeat" UI.
+- **Intelligence**: Context-aware memory and proactive assistance.
 
 ---
 
