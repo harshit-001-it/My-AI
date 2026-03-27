@@ -53,19 +53,22 @@ def auto_install_dependencies():
             missing.append(pkg)
 
     if missing:
-        print(f"AUTOMATION: Installing missing packages: {', '.join(missing)}")
+        print(f"AUTOMATION: Neural dependencies missing for mission: {', '.join(missing)}")
         for pkg in missing:
             print(f"  -> Deploying {pkg}...")
+            # Try standard install first
+            cmd = [sys.executable, "-m", "pip", "install", pkg, "--quiet", "--no-cache-dir"]
             try:
-                # Use --no-cache-dir for cleaner deployment and handle setuptools specifically
-                subprocess.check_call(
-                    [sys.executable, "-m", "pip", "install", pkg, "--quiet", "--no-cache-dir"],
-                    stdout=subprocess.DEVNULL,
-                    stderr=subprocess.PIPE
-                )
+                subprocess.check_call(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.PIPE)
                 print(f"  ✓ {pkg} integrated.")
             except subprocess.CalledProcessError:
-                print(f"  ✗ Failed to install {pkg}. Manual intervention may be required for dlib/mediapipe.")
+                # If it fails, try with --break-system-packages (for PEP 668)
+                try:
+                    print(f"  ! Retrying {pkg} with environment overrides...")
+                    subprocess.check_call(cmd + ["--break-system-packages"], stdout=subprocess.DEVNULL, stderr=subprocess.PIPE)
+                    print(f"  ✓ {pkg} integrated via override.")
+                except Exception as e:
+                    print(f"  ✗ Failed to install {pkg}. Please run: 'pip install {pkg}' manually.")
     else:
         print("All neural dependencies are online.")
 
