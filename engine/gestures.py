@@ -1,5 +1,12 @@
-import cv2
-import mediapipe as mp
+try:
+    import mediapipe as mp
+    from mediapipe.python.solutions import hands as mp_hands
+    from mediapipe.python.solutions import drawing_utils as mp_draw
+    HAS_MEDIAPIPE = True
+except (ImportError, AttributeError):
+    HAS_MEDIAPIPE = False
+    print("Warning: MediaPipe solutions not found. Gesture recognition disabled.")
+
 import threading
 import time
 from engine.command import execute_command
@@ -7,7 +14,8 @@ from engine.speech import speak
 
 class GestureProcessor:
     def __init__(self):
-        self.mp_hands = mp.solutions.hands
+        if not HAS_MEDIAPIPE: return
+        self.mp_hands = mp_hands
         self.hands = self.mp_hands.Hands(
             static_image_mode=False,
             max_num_hands=1,

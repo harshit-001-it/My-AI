@@ -142,11 +142,15 @@ def start_niva():
     """Exposed function to start the assistant."""
     print("Starting Niva...")
     
-    # Start Gesture Recognition in background
-    try:
-        start_gestures()
-    except Exception as e:
-        print(f"Gesture system failed to start: {e}")
+    # Start Gesture Recognition in background if available
+    from engine.gestures import HAS_MEDIAPIPE
+    if HAS_MEDIAPIPE:
+        try:
+            start_gestures()
+        except Exception as e:
+            print(f"Gesture system failed to start: {e}")
+    else:
+        print("Gesture recognition disabled (MediaPipe module error).")
 
     if not HAS_FACE_RECOGNITION:
         speak("Security protocols bypassed. Welcome back.")
@@ -162,10 +166,10 @@ def start_niva():
         eel.update_status("ACCESS DENIED")
 
 if __name__ == '__main__':
-    # Start the web app with transparency and frameless flags
+    # Start the web app with a semi-transparent dark theme
     try:
         eel.start('index.html', mode='chrome', 
-                  cmdline_args=['--window-size=400,600', '--transparent-window-control', '--frameless', '--always-on-top'],
+                  cmdline_args=['--window-size=440,640', '--frameless', '--always-on-top'],
                   host='localhost', port=8000, block=False)
     except:
         # Fallback for non-chrome environments

@@ -7,7 +7,7 @@
 body {
     margin: 0;
     padding: 0;
-    background-color: transparent !important; /* Forces transparency */
+    background-color: rgba(11, 17, 26, 0.9) !important; /* Dark fallback instead of pure transparent */
     color: var(--niva-color);
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     overflow: hidden;
@@ -15,7 +15,7 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
-    -webkit-app-region: drag; /* Allows moving the frameless window */
+    -webkit-app-region: drag;
 }
 
 .container {

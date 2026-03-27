@@ -108,28 +108,29 @@ def listen():
         time.sleep(0.1)
 
     r = sr.Recognizer()
-    # OPTIMIZATION: Faster recognition
+    # OPTIMIZATION: Better sensitivity
     r.dynamic_energy_threshold = True
-    r.energy_threshold = 300 
+    r.energy_threshold = 4000 # Increased for noisy environments
+    r.dynamic_energy_adjustment_damping = 0.15
+    r.dynamic_energy_ratio = 1.5
     
     try:
         with sr.Microphone() as source:
             print("Listening...")
-            eel.update_status("Listening...")
+            eel.update_status("LISTENING...")
             eel.set_amplitude(1)
             
-            # OPTIMIZATION: Reduce wait times
-            r.pause_threshold = 0.6 
-            r.adjust_for_ambient_noise(source, duration=0.3) 
+            r.pause_threshold = 0.8 # Slightly longer pause allowed
+            r.adjust_for_ambient_noise(source, duration=0.6) 
             
-            audio = r.listen(source, timeout=5, phrase_time_limit=8)
+            audio = r.listen(source, timeout=6, phrase_time_limit=10)
     except Exception as e:
         print(f"Microphone error: {e}")
         return "None"
 
     try:
         print("Recognizing...")
-        eel.update_status("Recognizing...")
+        eel.update_status("THINKING...") # Better UX
         eel.set_amplitude(0)
         
         global recognition_lang
