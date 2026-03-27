@@ -7,7 +7,7 @@
 body {
     margin: 0;
     padding: 0;
-    background-color: rgba(11, 17, 26, 0.9) !important; /* Dark fallback instead of pure transparent */
+    background-color: #0b111a !important; /* Solid dark theme fallback */
     color: var(--niva-color);
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     overflow: hidden;

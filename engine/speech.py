@@ -110,75 +110,62 @@ def listen():
     r = sr.Recognizer()
     # OPTIMIZATION: Better sensitivity
     r.dynamic_energy_threshold = True
-    r.energy_threshold = 4000 # Increased for noisy environments
+    r.energy_threshold = 600 # Lowered for better sensitivity
     r.dynamic_energy_adjustment_damping = 0.15
     r.dynamic_energy_ratio = 1.5
     
     try:
         with sr.Microphone() as source:
-            print("Listening...")
+            print("Niva: Listening for command...")
             eel.update_status("LISTENING...")
             eel.set_amplitude(1)
             
-            r.pause_threshold = 0.8 # Slightly longer pause allowed
-            r.adjust_for_ambient_noise(source, duration=0.6) 
+            r.pause_threshold = 1.0 # Allow longer pauses between words
+            r.adjust_for_ambient_noise(source, duration=0.8) # Better noise sampling
             
-            audio = r.listen(source, timeout=6, phrase_time_limit=10)
+            audio = r.listen(source, timeout=10, phrase_time_limit=12)
     except Exception as e:
         print(f"Microphone error: {e}")
         return "None"
 
     try:
-        print("Recognizing...")
-        eel.update_status("THINKING...") # Better UX
+        print("Niva: Processing neural patterns...")
+        eel.update_status("THINKING...")
         eel.set_amplitude(0)
         
         global recognition_lang
         query = r.recognize_google(audio, language=recognition_lang)
-        print(f"User (Original): {query}")
+        print(f"User (Input): {query}")
 
         global user_lang
         try:
             if has_translator:
-                # deep-translator doesn't have a fast local detect method without an API key
-                # However, we can translate ANY language to English automatically by passing source='auto'
-                
-                # Check if the text is already completely English
-                # If it's English, we don't need to do anything
-                # If it's another language, we translate it to English for commands
-                
                 try:
                     translated_query = GoogleTranslator(source='auto', target='en').translate(query)
                 except:
                     translated_query = query
                 
-                # Simple heuristic to detect if a translation actually occurred (meaning it wasn't English)
                 if translated_query.lower() != query.lower():
-                    # It was a foreign language
                     print(f"User (Translated): {translated_query}")
-                    
                     user_lang = 'hi' 
                     recognition_lang = 'en-IN'
-                    
                     return translated_query.lower()
                 else:
-                    user_lang = 'hi'
-                    recognition_lang = 'en-IN'
                     return query.lower()
             else:
                 return query.lower()
                 
         except Exception as e:
-            print(f"Input Translation Error: {e}. Processing original.")
+            print(f"Translation logic error: {e}")
+            return query.lower()
 
-    except Exception as e:
-        if "UnknownValueError" in str(type(e)):
-            # This just means the user was silent or the speech wasn't clearly understood
-            pass
-        else:
-            print(f"Speech Exception: {e}")
-        
-        print("Say that again please...")
+    except sr.UnknownValueError:
+        print("Niva: I heard some sound but could not identify any words.")
         return "None"
-    
-    return query.lower()
+    except sr.RequestError as e:
+        print(f"Niva: API connection failure; {e}")
+        speak("I am having trouble connecting to my cognitive networks. Please check your internet.")
+        return "None"
+    except Exception as e:
+        print(f"Detection Error: {e}")
+        return "None"
