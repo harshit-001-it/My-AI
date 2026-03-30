@@ -8,6 +8,7 @@ import screen_brightness_control as sbc
 import subprocess
 import datetime
 from engine.speech import speak
+from engine.iot_manager import handle_iot
 
 def execute_command(query):
     query = query.lower().strip()
@@ -119,7 +120,11 @@ def execute_command(query):
     elif 'status' in query:
         speak("All systems nominal. Vision enabled, Security active, Personality matrix stable.")
 
-    # 7. System Shutdown (Extreme Override)
+    # 7. IoT & Macro Protocols
+    elif any(word in query for word in ['lights', 'goodnight', 'morning']):
+        handle_iot(query)
+        
+    # 8. System Shutdown (Extreme Override)
     elif 'shutdown system' in query or 'terminate session' in query:
         speak("Proceeding with extreme caution. Initiating system termination in 10 seconds.")
         # speak("Just kidding, sir. I'll stay active for as long as you need me.") 
