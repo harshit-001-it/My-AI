@@ -2,20 +2,26 @@ import os
 import sys
 import importlib
 
-# Ensure project root is in path for modular imports
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..")))
+# ──────────────────────────────────────────────
+# NIVA_OS | PATH_RESOLUTION_PROTOCOL
+# ──────────────────────────────────────────────
+# Ensure the project root is in the system path for modular imports
+root_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+if root_path not in sys.path:
+    sys.path.insert(0, root_path)
 
-def check_node(name, package=None):
+def check_node(name):
     """Verifies if a neural node is online and correctly configured."""
     try:
-        importlib.import_module(package if package else name)
+        importlib.import_module(name)
         return True
-    except ImportError:
+    except Exception as e:
+        # print(f"DEBUG: {name} failure: {e}") # For deep debugging
         return False
 
 def run_diagnostic():
     print("\n" + "═"*60)
-    print("   NIVA_OS | PRODUCTION_DIAGNOSTIC_PROTOCOL v1.1")
+    print("   NIVA_OS | PRODUCTION_DIAGNOSTIC_PROTOCOL v1.2")
     print("═"*60 + "\n")
 
     # Domain-specific Node Mapping
@@ -32,7 +38,7 @@ def run_diagnostic():
 
     online_count = 0
     for node, package in nodes.items():
-        status = check_node(node, package)
+        status = check_node(package)
         icon = "● ONLINE" if status else "○ OFFLINE"
         color = "[OK]" if status else "[FAILED]"
         print(f" {node:<20} {icon:<10} {color}")

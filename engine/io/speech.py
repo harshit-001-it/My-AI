@@ -56,7 +56,7 @@ async def _edge_speak(text):
 def speech_worker():
     """Background worker for handling speech with edge-tts and pyttsx3 fallback."""
     global is_speaking
-    print("Jarvis Speech Node Active.")
+    print("Niva Speech Node Active.")
     
     # Create or get event loop for this thread (needed for edge-tts)
     loop = asyncio.new_event_loop()
@@ -68,7 +68,7 @@ def speech_worker():
             if not text: continue
 
             is_speaking = True
-            print(f"Jarvis: {text}")
+            print(f"Niva: {text}")
 
             # Optional Hindi translation if state is Hindi
             if user_lang == 'hi':
