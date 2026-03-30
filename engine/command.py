@@ -129,6 +129,14 @@ def execute_command(query):
         import eel
         try: eel.toggleFocus()()
         except: pass
+
+    elif 'hindi' in query:
+        from engine.speech import switch_language
+        switch_language("hi")
+    
+    elif 'english' in query:
+        from engine.speech import switch_language
+        switch_language("en")
         
     # 8. System Shutdown (Extreme Override)
     elif 'shutdown system' in query or 'terminate session' in query:
