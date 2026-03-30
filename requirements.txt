@@ -9,6 +9,7 @@ screen_brightness_control
 opencv-python
 deep-translator
 pygame
+psutil
 
 # Voice & Face & Gestures
 SpeechRecognition
