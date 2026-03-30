@@ -3,6 +3,8 @@ import random
 import datetime
 import requests
 import json
+import time
+from engine.registry import load_registry, update_setting
 
 # Placeholder for a more advanced AI model (e.g. Gemini API)
 # In a real-world scenario, you'd use os.getenv("GEMINI_API_KEY")
@@ -97,6 +99,15 @@ class JarvisBrain:
         return "none"
 
     def get_response(self, text):
+        """Generates a witty, context-aware JARVIS response with memory persistence."""
+        # 1. Update Short-Term Memory
+        registry = load_registry()
+        memory = registry.get("memory", [])
+        memory.append({"user": text, "timestamp": time.time()})
+        if len(memory) > 5: memory = memory[-5:]
+        update_setting("memory", memory)
+
+        # 2. Get AI Response
         response = self._get_api_response(text)
         self.history.append({"user": text, "jarvis": response})
         if len(self.history) > 10: self.history.pop(0)
