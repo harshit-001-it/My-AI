@@ -1,6 +1,6 @@
 import psutil
 import time
-from engine.speech import speak
+from engine.io.speech import speak
 
 class ProactiveReflex:
     def __init__(self):

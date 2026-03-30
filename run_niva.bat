@@ -1,8 +1,8 @@
 @echo off
-title JARVIS_OS | UNIFIED_LAUNCH_PROTOCOL
+title NIVA_OS | UNIFIED_LAUNCH_PROTOCOL
 echo.
 echo ─────────────────────────────────────────────────────────────
-echo   INITIALISING JARVIS_OS CORE [GRID_SYNC_ACTIVE]
+echo   INITIALISING NIVA_OS CORE [GRID_SYNC_ACTIVE]
 echo ─────────────────────────────────────────────────────────────
 echo.
 
@@ -18,10 +18,10 @@ if %errorlevel% neq 0 (
 echo [#] ANALYZING LOGIC NODES...
 pip install -r requirements.txt --quiet
 
-:: Start the JARVIS controller
+:: Start the NIVA controller
 echo [#] DEPLOYING OBSIDIAN_KINETIC_HUD...
 python main.py
 
 echo.
-echo [!] JARVIS SESSION TERMINATED. PROTECTING MASTER'S DATA.
+echo [!] NIVA SESSION TERMINATED. PROTECTING MASTER'S DATA.
 pause

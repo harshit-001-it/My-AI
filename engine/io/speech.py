@@ -38,7 +38,7 @@ def speak(text):
 
 async def _edge_speak(text):
     """Internal async function for edge-tts."""
-    # Choose a high-quality human-like voice (Ryan is good for Jarvis feel)
+    # Choose a high-quality human-like voice (Ryan is good for Niva feel)
     voice = "en-US-RyanMultilingualNeural" if user_lang == "en" else "hi-IN-MadhurNeural"
     communicate = edge_tts.Communicate(text, voice)
     output_file = "speech_temp.mp3"
@@ -104,7 +104,7 @@ def listen():
     global is_speaking
     if not sr: return "None"
 
-    # Wait if Jarvis is currently speaking
+    # Wait if Niva is currently speaking
     while is_speaking or not speech_queue.empty():
         time.sleep(0.1)
 

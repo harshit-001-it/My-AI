@@ -1,7 +1,7 @@
 import os
 import time
-from engine.speech import speak
-from engine.registry import load_registry, update_setting
+from engine.io.speech import speak
+from engine.core.registry import get_setting
 
 class IoTManager:
     def __init__(self):
@@ -25,8 +25,8 @@ class IoTManager:
 
     def execute_macro(self, macro_name):
         """Executes a series of predefined actions (Macros)."""
-        registry = load_registry()
-        macros = registry.get("macros", {
+        # Macros can be integrated into the central registry later
+        macros = {
             "goodnight": [
                 {"type": "iot", "device": "main_lights", "action": "OFF"},
                 {"type": "system", "action": "lock"},
@@ -36,7 +36,7 @@ class IoTManager:
                 {"type": "iot", "device": "main_lights", "action": "ON", "level": 50},
                 {"type": "speech", "text": "Good morning, Sir. Your schedule is synchronized."}
             ]
-        })
+        }
 
         if macro_name in macros:
             speak(f"Initiating {macro_name} protocol.")
