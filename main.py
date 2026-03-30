@@ -4,6 +4,7 @@ import time
 import threading
 import eel
 import psutil
+import pygetwindow as gw
 from engine.speech import speak, listen
 from engine.command import execute_command
 from engine.face_auth import authenticate
@@ -24,8 +25,9 @@ def trigger_auth():
         # Transition to Dashboard
         eel.show_dashboard()() # Call JS function
         threading.Thread(target=jarvis_loop, daemon=True).start()
-        # Start Telemetry
+        # Start Workers
         threading.Thread(target=telemetry_worker, daemon=True).start()
+        threading.Thread(target=media_sensing_worker, daemon=True).start()
     else:
         eel.auth_failed()()
 
@@ -82,11 +84,36 @@ def telemetry_worker():
         try:
             cpu = psutil.cpu_percent()
             ram = psutil.virtual_memory().percent
-            # Optional: Add temp if supported
             eel.update_telemetry(cpu, ram)()
         except:
             pass
-        eel.sleep(2.0) # Update every 2 seconds
+        eel.sleep(2.0)
+
+def media_sensing_worker():
+    """Background thread to detect active media windows."""
+    last_media = ""
+    while True:
+        try:
+            # Heuristic for active media windows
+            all_windows = gw.getAllTitles()
+            media_apps = ['Spotify', 'YouTube', 'VLC', 'Media Player', 'Chrome']
+            active_media = "NO_ACTIVE_MEDIA"
+            active_artist = "Master-Link-Online"
+            
+            for title in all_windows:
+                for app in media_apps:
+                    if app in title and len(title) > len(app) + 3:
+                        active_media = title
+                        active_artist = app
+                        break
+                if active_media != "NO_ACTIVE_MEDIA": break
+            
+            if active_media != last_media:
+                eel.update_media(active_media[:20] + "...", active_artist)()
+                last_media = active_media
+        except:
+            pass
+        eel.sleep(5.0) # Polling every 5 seconds
 
 # ──────────────────────────────────────────────
 # Entry Point

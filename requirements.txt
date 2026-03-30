@@ -10,6 +10,7 @@ opencv-python
 deep-translator
 pygame
 psutil
+pygetwindow
 
 # Voice & Face & Gestures
 SpeechRecognition
