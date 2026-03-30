@@ -84,6 +84,20 @@ def execute_command(query):
             speak("Muting audio.")
             pyautogui.press("volumemute")
 
+    elif any(word in query for word in ['pause', 'stop music', 'resume', 'next', 'previous']):
+        if 'next' in query:
+            speak("Skipping to the next track.")
+            pyautogui.press("nexttrack")
+        elif 'previous' in query:
+            speak("Reverting to the previous track.")
+            pyautogui.press("prevtrack")
+        elif 'pause' in query or 'stop' in query:
+            speak("Pausing media playback.")
+            pyautogui.press("playpause")
+        elif 'resume' in query or 'play' in query:
+            speak("Resuming media.")
+            pyautogui.press("playpause")
+
     elif 'brightness' in query:
         try:
             current = sbc.get_brightness()[0]
