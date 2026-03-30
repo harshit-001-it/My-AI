@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+    <script id="tailwind-config">
+          tailwind.config = {
+            darkMode: "class",
+            theme: {
+              extend: {
+                colors: {
+                  "secondary-dim": "#c9d7de",
+                  "primary-fixed": "#00f1fe",
+                  "primary-fixed-dim": "#00e2ee",
+                  "background": "#0e0e0e",
+                  "tertiary": "#baeafe",
+                  "on-tertiary-container": "#1c4f5f",
+                  "on-primary-container": "#00555a",
+                  "error": "#ff716c",
+                  "on-background": "#ffffff",
+                  "secondary-fixed": "#d7e5ec",
+                  "primary": "#99f7ff",
+                  "surface": "#0e0e0e",
+                  "inverse-surface": "#fcf8f8",
+                  "on-tertiary-fixed": "#003c4b",
+                  "inverse-primary": "#006a70",
+                  "on-primary-fixed": "#004145",
+                  "on-secondary": "#46545a",
+                  "tertiary-container": "#acdcf0",
+                  "tertiary-fixed-dim": "#9ecee1",
+                  "tertiary-dim": "#9ecee1",
+                  "surface-dim": "#0e0e0e",
+                  "on-secondary-fixed-variant": "#505e64",
+                  "on-error-container": "#ffa8a3",
+                  "surface-container": "#1a1919",
+                  "secondary-container": "#3c494f",
+                  "primary-dim": "#00e2ee",
+                  "outline": "#777575",
+                  "on-primary-fixed-variant": "#006065",
+                  "surface-container-low": "#131313",
+                  "secondary-fixed-dim": "#c9d7de",
+                  "outline-variant": "#494847",
+                  "on-tertiary-fixed-variant": "#275869",
+                  "tertiary-fixed": "#acdcf0",
+                  "on-error": "#490006",
+                  "on-tertiary": "#265868",
+                  "on-surface-variant": "#adaaaa",
+                  "on-primary": "#005f64",
+                  "surface-container-lowest": "#000000",
+                  "primary-container": "#00f1fe",
+                  "on-surface": "#ffffff",
+                  "surface-variant": "#262626",
+                  "secondary": "#d7e5ec",
+                  "surface-tint": "#99f7ff",
+                  "on-secondary-container": "#c4d2da",
+                  "error-dim": "#d7383b",
+                  "inverse-on-surface": "#565554",
+                  "surface-container-high": "#201f1f",
+                  "error-container": "#9f0519",
+                  "surface-bright": "#2c2c2c",
+                  "on-secondary-fixed": "#344147",
+                  "surface-container-highest": "#262626"
+                },
+                fontFamily: {
+                  "headline": ["Space Grotesk"],
+                  "body": ["Inter"],
+                  "label": ["Space Grotesk"]
+                },
+                borderRadius: {"DEFAULT": "0.125rem", "lg": "0.25rem", "xl": "0.5rem", "full": "0.75rem"},
+              },
+            },
+          }
+    </script>
+    <style>
+        .glass-panel { background: rgba(38, 38, 38, 0.4); backdrop-filter: blur(20px); }
+        .scanning-line { height: 2px; background: #99f7ff; opacity: 0.3; box-shadow: 0 0 15px #99f7ff; width: 100%; position: absolute; top: 0; left: 0; }
+        .glow-cyan { box-shadow: 0 0 40px rgba(153, 247, 255, 0.15); }
+        .text-glow { text-shadow: 0 0 10px rgba(153, 247, 255, 0.5); }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body selection:bg-primary/30 min-h-screen overflow-hidden">
+    <header class="fixed top-0 w-full z-50 flex justify-between items-center px-6 py-4 bg-[#0e0e0e]/40 backdrop-blur-xl border-b border-[#494847]/15">
+        <div class="flex items-center gap-2">
+            <span class="text-xl font-bold tracking-tighter text-[#99f7ff] drop-shadow-[0_0_8px_rgba(153,247,255,0.5)] font-headline">JARVIS_OS</span>
+        </div>
+        <div class="flex items-center gap-4 text-[#99f7ff]">
+            <button class="material-symbols-outlined">security</button>
+            <button class="material-symbols-outlined">settings</button>
+        </div>
+    </header>
+    <main class="relative h-screen w-full flex items-center justify-center pt-16">
+        <div class="absolute inset-0 z-0 opacity-10" style="background-image: radial-gradient(circle at 2px 2px, #494847 1px, transparent 0); background-size: 40px 40px;"></div>
+        <div class="container mx-auto grid grid-cols-12 gap-8 px-8 z-10 max-w-7xl h-full items-center">
+            <div class="col-span-12 lg:col-span-3 flex flex-col gap-12">
+                <div class="flex flex-col gap-2">
+                    <span class="font-label text-[0.6875rem] tracking-[0.2em] uppercase text-on-surface-variant">System Status</span>
+                    <h2 class="font-headline text-3xl font-bold tracking-tighter text-glow">SECURE_ID</h2>
+                    <div class="h-px w-24 bg-gradient-to-r from-primary to-transparent mt-2"></div>
+                </div>
+            </div>
+            <div class="col-span-12 lg:col-span-6 flex flex-col items-center justify-center relative">
+                <div class="relative w-80 h-80 rounded-full border border-primary/20 flex items-center justify-center glow-cyan" id="scanner">
+                    <div class="absolute inset-0 rounded-full border-t-2 border-primary/40 animate-[spin_8s_linear_infinite]"></div>
+                    <div class="relative w-64 h-64 rounded-full bg-surface-container overflow-hidden border border-outline-variant/15 flex items-center justify-center">
+                        <span class="material-symbols-outlined text-8xl text-primary font-light" style="font-variation-settings: 'FILL' 0, 'wght' 100;" id="fingerprint-icon">fingerprint</span>
+                        <div class="scanning-line animate-[bounce_4s_ease-in-out_infinite]"></div>
+                    </div>
+                </div>
+                <div class="mt-8 text-center" id="auth-status">
+                    <span class="font-label text-[0.6875rem] tracking-[0.3em] uppercase text-primary animate-pulse">READY_FOR_BIO_SYNC</span>
+                </div>
+                <div class="mt-8">
+                    <button id="init-btn" class="bg-gradient-to-br from-primary to-primary-container text-on-primary px-12 py-4 font-headline text-sm font-bold tracking-widest uppercase hover:opacity-90 transition-opacity flex items-center gap-2 group">
+                        <span>Initialize Protocol</span>
+                        <span class="material-symbols-outlined text-sm group-hover:translate-x-1 transition-transform">arrow_forward</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </main>
+    <script src="/eel.js" type="text/javascript"></script>
+    <script>
+        const initBtn = document.getElementById('init-btn');
+        const scanner = document.getElementById('scanner');
+        const status = document.getElementById('auth-status').querySelector('span');
+        const icon = document.getElementById('fingerprint-icon');
+
+        initBtn.onclick = () => {
+            status.innerText = "AUTHENTICATING...";
+            scanner.classList.add('animate-pulse');
+            eel.trigger_auth()();
+        };
+
+        eel.expose(show_dashboard);
+        function show_dashboard() {
+            status.innerText = "IDENTITY_CONFIRMED";
+            status.classList.add('text-cyan-400');
+            setTimeout(() => {
+                window.location.href = "index.html";
+            }, 1000);
+        }
+
+        eel.expose(auth_failed);
+        function auth_failed() {
+            status.innerText = "ACCESS_DENIED";
+            status.style.color = "#ff716c";
+            scanner.classList.remove('glow-cyan');
+            scanner.style.boxShadow = "0 0 40px rgba(255, 113, 108, 0.4)";
+            setTimeout(() => {
+                status.innerText = "READY_FOR_BIO_SYNC";
+                status.style.color = "";
+                scanner.classList.add('glow-cyan');
+                scanner.style.boxShadow = "";
+                scanner.classList.remove('animate-pulse');
+            }, 3000);
+        }
+    </script>
+</body>
+</html>

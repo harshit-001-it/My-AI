@@ -1,34 +1,149 @@
 <!DOCTYPE html>
-<html lang="en">
+<html class="dark" lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Niva - AI Assistant</title>
-    <link rel="stylesheet" href="style.css">
-    <!-- Particles.js -->
-    <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
-    <!-- SiriWave.js -->
-    <script src="https://unpkg.com/siriwave/dist/siriwave.umd.min.js"></script>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>JARVIS_OS | DASHBOARD</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+    <script id="tailwind-config">
+          tailwind.config = {
+            darkMode: "class",
+            theme: {
+              extend: {
+                colors: {
+                  "surface-container": "#1a1919",
+                  "primary": "#99f7ff",
+                  "background": "#0e0e0e",
+                  "on-surface": "#ffffff",
+                  "surface-variant": "#262626",
+                },
+                fontFamily: {
+                  "headline": ["Space Grotesk"],
+                  "body": ["Inter"],
+                },
+              },
+            },
+          }
+    </script>
+    <style>
+        body { background-color: #0e0e0e; color: #ffffff; overflow: hidden; }
+        .glass-panel { background: rgba(38, 38, 38, 0.4); backdrop-filter: blur(20px); border: 1px solid rgba(73, 72, 71, 0.15); }
+        .orb-glow { box-shadow: 0 0 80px 20px rgba(153, 247, 255, 0.2); }
+        .text-glow { text-shadow: 0 0 10px rgba(153, 247, 255, 0.5); }
+        .wave-bar { transition: height 0.1s ease; }
+    </style>
 </head>
-<body>
-    <!-- Main Niva Interface -->
-    <div class="container">
-        <div class="niva-heart-container" id="niva-heart-trigger">
-            <div class="niva-heart" id="niva-heart">
-                <div class="core"></div>
-                <div class="ring-1"></div>
-                <div class="ring-2"></div>
-                <div class="ring-3"></div>
+<body class="font-body selection:bg-primary/30">
+    <header class="fixed top-0 w-full flex justify-between items-center px-8 py-6 z-50 bg-transparent">
+        <div class="flex items-center gap-8">
+            <div class="text-xl font-bold tracking-tighter text-white font-headline">JARVIS_OS</div>
+            <nav class="hidden md:flex gap-6">
+                <a class="font-space-grotesk tracking-widest uppercase text-xs text-cyan-400 border-b-2 border-cyan-400" href="#">SYNOPSIS</a>
+                <a class="font-space-grotesk tracking-widest uppercase text-xs text-gray-500 hover:text-cyan-300" href="vision.html">VISION_HUD</a>
+            </nav>
+        </div>
+        <div class="flex items-center gap-4">
+            <span class="material-symbols-outlined text-cyan-400 cursor-pointer" onclick="eel.shutdown_jarvis()">power_settings_new</span>
+        </div>
+    </header>
+
+    <main class="h-screen w-full relative flex items-center justify-center">
+        <!-- TOP LEFT OVERLAY -->
+        <div class="absolute top-24 left-10 flex flex-col gap-1 z-20">
+            <div class="flex items-baseline gap-3">
+                <span id="system-time" class="text-4xl font-headline font-light tracking-tight text-white">00:00</span>
+                <span class="text-xs font-headline tracking-[0.3em] text-gray-500 uppercase">SYSTEM_TIME</span>
+            </div>
+            <div class="flex items-center gap-2 mt-2">
+                <span class="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
+                <span class="text-sm font-headline tracking-widest text-primary uppercase">User: Master</span>
             </div>
         </div>
-        
-        <h1 class="title">NIVA</h1>
-        <p class="status" id="status">INITIALIZING SYSTEMS...</p>
 
-        <div id="siri-container"></div>
-    </div>
+        <!-- CENTER INTELLIGENCE ORB -->
+        <div class="relative flex items-center justify-center z-10">
+            <div class="absolute w-[600px] h-[600px] bg-primary/5 rounded-full blur-[100px]"></div>
+            <div class="absolute w-96 h-96 border border-primary/20 rounded-full animate-[spin_20s_linear_infinite]"></div>
+            <div class="w-64 h-64 rounded-full bg-gradient-to-br from-primary via-cyan-500 to-blue-900 flex items-center justify-center orb-glow border border-white/20 relative overflow-hidden" id="central-orb">
+                <div class="flex items-end gap-1 h-20" id="wave-container">
+                    <div class="w-1 bg-white h-4 wave-bar"></div>
+                    <div class="w-1 bg-white h-8 wave-bar"></div>
+                    <div class="w-1 bg-white h-12 wave-bar"></div>
+                    <div class="w-1 bg-white h-8 wave-bar"></div>
+                    <div class="w-1 bg-white h-4 wave-bar"></div>
+                </div>
+            </div>
+            <div class="absolute -top-32 text-center">
+                <div class="text-[10px] font-headline tracking-[0.5em] text-primary/60 uppercase mb-2">NEURAL_SYNC_RATE</div>
+                <div class="text-4xl font-headline font-bold text-white text-glow" id="sync-rate">98.4%</div>
+            </div>
+        </div>
 
-    <script src="/eel.js"></script>
-    <script src="main.js"></script>
+        <!-- STATUS OVERLAY -->
+        <div class="absolute bottom-10 left-1/2 -translate-x-1/2 text-center z-20">
+            <div id="jarvis-status" class="text-xs font-headline tracking-[0.6em] text-primary animate-pulse uppercase">SYSTEM_STANDBY</div>
+        </div>
+
+        <!-- DETECTED INTENT CARD -->
+        <div class="absolute left-10 top-1/2 -translate-y-1/2 z-20">
+            <div class="glass-panel w-72 p-6 rounded-none relative">
+                <div class="absolute -left-[1px] top-0 h-12 w-[2px] bg-primary"></div>
+                <div class="text-[10px] font-headline tracking-[0.2em] text-gray-500 uppercase mb-4">Detected Intent</div>
+                <div id="intent-display" class="text-xl font-headline text-white tracking-tighter">WAITING_FOR_INPUT...</div>
+            </div>
+        </div>
+    </main>
+
+    <script src="/eel.js" type="text/javascript"></script>
+    <script>
+        // Update Time
+        setInterval(() => {
+            const now = new Date();
+            document.getElementById('system-time').innerText = now.getHours().toString().padStart(2, '0') + ":" + now.getMinutes().toString().padStart(2, '0');
+        }, 1000);
+
+        // Wave Animation Logic
+        const bars = document.querySelectorAll('.wave-bar');
+        let waveInterval;
+
+        function startWave() {
+            if (waveInterval) return;
+            waveInterval = setInterval(() => {
+                bars.forEach(bar => {
+                    const h = Math.floor(Math.random() * 60) + 10;
+                    bar.style.height = h + 'px';
+                });
+            }, 100);
+        }
+
+        function stopWave() {
+            clearInterval(waveInterval);
+            waveInterval = null;
+            bars.forEach(bar => bar.style.height = '10px');
+        }
+
+        // Eel Exposed Functions
+        eel.expose(update_status);
+        function update_status(statusMsg) {
+            const statusEl = document.getElementById('jarvis-status');
+            statusEl.innerText = statusMsg;
+            
+            if (statusMsg === "LISTENING") {
+                startWave();
+            } else if (statusMsg === "PROCESSING") {
+                bars.forEach(bar => bar.style.height = '40px'); // Static high wave
+            } else {
+                stopWave();
+            }
+        }
+
+        eel.expose(update_intent);
+        function update_intent(intentText) {
+            document.getElementById('intent-display').innerText = intentText.toUpperCase();
+            document.getElementById('sync-rate').innerText = (Math.random() * 2 + 97).toFixed(1) + "%";
+        }
+    </script>
 </body>
 </html>

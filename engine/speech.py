@@ -1,89 +1,80 @@
-try:
-    import pyttsx3
-except ImportError:
-    pyttsx3 = None
-
-try:
-    import speech_recognition as sr
-except ImportError:
-    sr = None
-
-import eel
-import threading
+import os
 import queue
+import threading
 import time
-try:
-    from deep_translator import GoogleTranslator
-    has_translator = True
-except ImportError:
-    has_translator = False
-    print("deep-translator not found. Translation features disabled.")
+import asyncio
+import edge_tts
+import pygame # For playing edge-tts mp3 locally
+import pyttsx3
+import speech_recognition as sr
+from deep_translator import GoogleTranslator
+
+# Initialize Pygame for audio playback (faster and more reliable for mp3 than other libs)
+pygame.mixer.init()
 
 # Multi-language state
-user_lang = "en" # Language for responding
-recognition_lang = "en-IN" # Language for specialized recognition
+user_lang = "en"
+recognition_lang = "en-IN"
+is_speaking = False
 
-# Speech Queue and Thread
+# Speech Queue
 speech_queue = queue.Queue()
 
 def speak(text):
-    """Adds text to the speech queue to be spoken by the background thread."""
+    """Adds text to the speech queue."""
     speech_queue.put(text)
 
-# We need a way to track if we are currently speaking so we don't listen to ourselves.
-is_speaking = False
+async def _edge_speak(text):
+    """Internal async function for edge-tts."""
+    # Choose a high-quality human-like voice (Ryan is good for Jarvis feel)
+    voice = "en-US-RyanMultilingualNeural" if user_lang == "en" else "hi-IN-MadhurNeural"
+    communicate = edge_tts.Communicate(text, voice)
+    output_file = "speech_temp.mp3"
+    await communicate.save(output_file)
+    
+    # Play the file
+    pygame.mixer.music.load(output_file)
+    pygame.mixer.music.play()
+    while pygame.mixer.music.get_busy():
+        await asyncio.sleep(0.1)
+    pygame.mixer.music.unload()
+    try: os.remove(output_file)
+    except: pass
 
 def speech_worker():
-    """Background worker for handling speech on a dedicated thread."""
+    """Background worker for handling speech with edge-tts and pyttsx3 fallback."""
     global is_speaking
-    print("Speech worker thread started.")
+    print("Jarvis Speech Node Active.")
+    
+    # Create or get event loop for this thread (needed for edge-tts)
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+
     while True:
         try:
             text = speech_queue.get(timeout=1)
-            if not text:
-                continue
+            if not text: continue
 
             is_speaking = True
-            print(f"Speech worker processing: '{text}'")
-            global user_lang
-            
-            # Translate back to user's language if not English
-            if user_lang and user_lang != 'en' and has_translator:
-                try:
-                    print(f"Translating to {user_lang}...")
-                    text = GoogleTranslator(source='auto', target=user_lang).translate(text)
-                except Exception as e:
-                    print(f"Translation Output Error: {e}. Stick to English.")
+            print(f"Jarvis: {text}")
 
-            print(f"Niva: {text}")
-            eel.update_status(text)
-            
-            # Initialize engine for each request to ensure it's "fresh" and active
-            try:
-                _engine = None
+            # Optional Hindi translation if state is Hindi
+            if user_lang == 'hi':
                 try:
-                    _engine = pyttsx3.init('sapi5')
-                except:
-                    _engine = pyttsx3.init()
-                
-                if _engine:
-                    voices = _engine.getProperty('voices')
-                    indian_voice = next((v for v in voices if any(x in v.name for x in ["India", "Heera", "Ravi", "Kalpana"])), None)
-                    
-                    if indian_voice:
-                        _engine.setProperty('voice', indian_voice.id)
-                    elif len(voices) > 1:
-                        _engine.setProperty('voice', voices[1].id)
-                    
-                    _engine.setProperty('rate', 150) # Balanced sweet tone
-                    _engine.setProperty('volume', 1.0)
-                    
-                    _engine.say(text)
-                    _engine.runAndWait()
-                    _engine.stop()
+                    text = GoogleTranslator(source='auto', target='hindi').translate(text)
+                except: pass
+
+            # Try Premium Voice (Edge-TTS)
+            try:
+                loop.run_until_complete(_edge_speak(text))
             except Exception as e:
-                print(f"TTS Error during speech: {e}")
-                
+                print(f"Premium voice failed: {e}. Falling back to system voice.")
+                # Fallback to pyttsx3
+                engine = pyttsx3.init()
+                engine.setProperty('rate', 165)
+                engine.say(text)
+                engine.runAndWait()
+            
             speech_queue.task_done()
             is_speaking = False
         except queue.Empty:
@@ -91,81 +82,38 @@ def speech_worker():
             continue
         except Exception as e:
             is_speaking = False
-            print(f"Unexpected error in speech_worker: {e}")
+            print(f"Speech Loop Error: {e}")
 
-# Start the speech worker thread
-if pyttsx3:
-    threading.Thread(target=speech_worker, daemon=True).start()
+# Start speech thread
+threading.Thread(target=speech_worker, daemon=True).start()
 
 def listen():
+    """High-sensitivity audio capture for commands."""
     global is_speaking
-    if not sr:
-        print("Speech recognition not available (missing libraries).")
-        return "None"
+    if not sr: return "None"
 
-    # Don't listen while currently speaking (prevent echo loop)
+    # Wait if Jarvis is currently speaking
     while is_speaking or not speech_queue.empty():
         time.sleep(0.1)
 
     r = sr.Recognizer()
-    # OPTIMIZATION: Better sensitivity
     r.dynamic_energy_threshold = True
-    r.energy_threshold = 600 # Lowered for better sensitivity
-    r.dynamic_energy_adjustment_damping = 0.15
-    r.dynamic_energy_ratio = 1.5
+    r.energy_threshold = 300 
     
     try:
         with sr.Microphone() as source:
-            print("Niva: Listening for command...")
-            eel.update_status("LISTENING...")
-            eel.set_amplitude(1)
-            
-            r.pause_threshold = 1.0 # Allow longer pauses between words
-            r.adjust_for_ambient_noise(source, duration=0.8) # Better noise sampling
-            
-            audio = r.listen(source, timeout=10, phrase_time_limit=12)
+            print("Listening...")
+            # Ambient noise adjustment
+            r.adjust_for_ambient_noise(source, duration=0.5)
+            audio = r.listen(source, timeout=10, phrase_time_limit=10)
     except Exception as e:
-        print(f"Microphone error: {e}")
+        print(f"Mic Error: {e}")
         return "None"
 
     try:
-        print("Niva: Processing neural patterns...")
-        eel.update_status("THINKING...")
-        eel.set_amplitude(0)
-        
-        global recognition_lang
+        print("Processing...")
         query = r.recognize_google(audio, language=recognition_lang)
-        print(f"User (Input): {query}")
-
-        global user_lang
-        try:
-            if has_translator:
-                try:
-                    translated_query = GoogleTranslator(source='auto', target='en').translate(query)
-                except:
-                    translated_query = query
-                
-                if translated_query.lower() != query.lower():
-                    print(f"User (Translated): {translated_query}")
-                    user_lang = 'hi' 
-                    recognition_lang = 'en-IN'
-                    return translated_query.lower()
-                else:
-                    return query.lower()
-            else:
-                return query.lower()
-                
-        except Exception as e:
-            print(f"Translation logic error: {e}")
-            return query.lower()
-
-    except sr.UnknownValueError:
-        print("Niva: I heard some sound but could not identify any words.")
-        return "None"
-    except sr.RequestError as e:
-        print(f"Niva: API connection failure; {e}")
-        speak("I am having trouble connecting to my cognitive networks. Please check your internet.")
-        return "None"
-    except Exception as e:
-        print(f"Detection Error: {e}")
+        print(f"User: {query}")
+        return query.lower()
+    except:
         return "None"

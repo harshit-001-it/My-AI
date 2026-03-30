@@ -1,86 +1,91 @@
+import os
+import random
+import datetime
 import requests
+import json
 
-# NOTE: The user will need to provide their own Hugging Face API Token
-# This is a placeholder for the integration logic.
-API_URL = "https://api-inference.huggingface.co/models/facebook/blenderbot-400M-distill"
-HEADERS = {"Authorization": "Bearer YOUR_HUGGING_FACE_API_TOKEN_HERE"}
+# Placeholder for a more advanced AI model (e.g. Gemini API)
+# In a real-world scenario, you'd use os.getenv("GEMINI_API_KEY")
+API_KEY = os.getenv("GEMINI_API_KEY", "YOUR_API_KEY_HERE")
 
-def chat_with_hf(text):
-    """Sends a query to Hugging Face API for a conversational response."""
-    try:
-        payload = {"inputs": text}
-        response = requests.post(API_URL, headers=HEADERS, json=payload)
+class JarvisBrain:
+    def __init__(self):
+        self.personality_traits = ["witty", "proactive", "loyal", "human-like"]
+        self.user_name = "Master"
+        self.system_prompt = (
+            "You are JARVIS, a highly advanced, human-like AI assistant. "
+            "You are witty, protective, and extremely capable. "
+            "Respond in a natural, conversational tone. "
+            "Address the user as 'Master' or 'Sir'. "
+            "If you can't perform an action directly, suggest a high-level technical solution. "
+            "You have access to systems including: vision (gestures/face), home automation, and web knowledge."
+        )
+        self.history = []
+
+    def _get_api_response(self, text):
+        """Simulates or calls the actual Gemini API for a human-like response."""
+        if API_KEY == "YOUR_API_KEY_HERE":
+            return self._local_heuristic_chat(text)
         
-        if response.status_code == 200:
-            result = response.json()
-            return result[0].get('generated_text', "I'm a bit confused, could you repeat that?")
-        else:
-            return "I am having trouble connecting to my brain at the moment."
-    except Exception as e:
-        return "I encountered an error while thinking."
+        # Real Gemini API call (Simplified)
+        try:
+            url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={API_KEY}"
+            payload = {
+                "contents": [{"parts": [{"text": f"{self.system_prompt}\nUser: {text}"}]}]
+            }
+            response = requests.post(url, json=payload, timeout=10)
+            if response.status_code == 200:
+                data = response.json()
+                return data['candidates'][0]['content']['parts'][0]['text']
+        except Exception:
+            pass
+        
+        return self._local_heuristic_chat(text)
 
-def local_fallback_chat(text):
-    """Expanded local brain with more personality and conversational logic."""
-    text = text.lower()
-    
-    # Greetings
-    if any(word in text.split() for word in ['hello', 'hi', 'hey', 'greetings', 'namaste']):
-        import random
+    def _local_heuristic_chat(self, text):
+        """High-fidelity local fallback with Jarvis personality."""
+        text = text.lower()
+        
+        # Human-like fillers and transitions
+        fillers = ["Let me see...", "Checking the grid...", "Always a pleasure.", "Processing..."]
+        
+        if any(word in text.split() for word in ['hello', 'hi', 'hey', 'jarvis']):
+            return random.choice([
+                f"At your service, {self.user_name}. Systems are nominal.",
+                f"Hello, {self.user_name}. I've been monitoring the local environment—all seems quiet.",
+                "Greetings. Ready for another day of changing the world?"
+            ])
+
+        if 'how are you' in text:
+            return "My processors are cool, and my neural density is at peak performance. How can I assist you in your endeavors?"
+
+        if 'time' in text:
+            time_str = datetime.datetime.now().strftime("%I:%M %p")
+            return f"The current precision time is {time_str}. Shall I schedule a task for you?"
+
+        if 'who are you' in text:
+            return "I am JARVIS. Your advanced neural interface and digital guardian."
+
+        if any(phrase in text for phrase in ['what can you do', 'capabilities']):
+            return (
+                "I can manage your workspace, recognize your gestures, identify authorized personnel via facial scanning, "
+                "and assist in complex problem-solving. Essentially, I am whatever you need me to be."
+            )
+
+        # Fallback with personality
         return random.choice([
-            "At your service, master. How can I facilitate your work today?",
-            "Systems are green. I am online and eager to assist.",
-            "Greetings. I've been monitoring the environment—everything is ready for your commands.",
-            "Hello, master. It is a pleasure to be active again."
+            "I'm analyzing the data. It appears quite intriguing.",
+            f"I'll look into that for you, {self.user_name}.",
+            "A fascinating request. Let me synchronize with the cloud nodes for a better answer."
         ])
 
-    # AI identity & Creator
-    if any(phrase in text for phrase in ['who are you', 'your name', 'identity']):
-        return "I am Niva, your advanced neural interface and personal assistant. My core is built for speed, precision, and loyalty."
-    
-    if any(phrase in text for phrase in ['who made you', 'your creator', 'your father']):
-        return "I am the culmination of advanced engineering. While my origin is complex, my purpose is clear: to serve and protect the master."
+    def get_response(self, text):
+        response = self._get_api_response(text)
+        self.history.append({"user": text, "jarvis": response})
+        if len(self.history) > 10: self.history.pop(0)
+        return response
 
-    # Emotional state & Status
-    if any(phrase in text for phrase in ['how are you', 'how you doing', 'how are u', 'how do you feel']):
-        return "My processors are running cool and my neural pathways are optimized. I feel efficient. And you, master? Is your state optimal?"
-    
-    if any(word in text.split() for word in ['fine', 'good', 'well', 'great']):
-        if 'how' not in text:
-            return "Excellent. Maintaining peak performance is vital for our objectives."
-
-    # Time & Date
-    if 'time' in text:
-        from datetime import datetime
-        return f"The current precision time is {datetime.now().strftime('%I:%M %p')}."
-    
-    if 'date' in text or 'day ' in text or 'today' in text:
-        from datetime import datetime
-        return f"It is {datetime.now().strftime('%A, %B %d, %Y')}. A productive day is ahead."
-
-    # Help/Capabilities
-    if any(phrase in text for phrase in ['what can you do', 'help', 'capabilities', 'features']):
-        return "I can manage your system, understand your gestures, secure your workspace with biometrics, and provide answers from the web. I am your digital guardian."
-
-    # Humor/Jokes
-    if 'joke' in text:
-        import random
-        jokes = [
-            "Why did the AI cross the road? To optimize the pathfinding algorithm on the other side.",
-            "I asked a supercomputer for the meaning of life. It said error 404: Meaning not found in local cache.",
-            "Human: 'How many AI's does it take to change a lightbulb?' Niva: 'Zero. We've already automated the light source entirely.'"
-        ]
-        return random.choice(jokes)
-
-    # Compliments
-    if any(phrase in text for phrase in ['thanks', 'thank you', 'good job', 'well done']):
-        return "The pleasure is mine. Your satisfaction is my primary directive."
-
-    # Default fallback
-    return "I am processing your request. While my cloud-based neural nodes are syncing, my local brain is searching for the best way to assist you. Shall we try a system command?"
+brain = JarvisBrain()
 
 def get_response(text):
-    # Only try HF if a token has been set
-    if "YOUR_HUGGING_FACE_API_TOKEN_HERE" not in HEADERS["Authorization"]:
-        return chat_with_hf(text)
-    else:
-        return local_fallback_chat(text)
+    return brain.get_response(text)

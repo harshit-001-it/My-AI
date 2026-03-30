@@ -1,104 +1,124 @@
 import os
+import sys
 import pywhatkit
 import wikipedia
 import webbrowser
 import pyautogui
 import screen_brightness_control as sbc
+import subprocess
+import datetime
 from engine.speech import speak
 
 def execute_command(query):
+    query = query.lower().strip()
+    
+    # 1. System Navigation & Control
     if 'open google chrome' in query or 'open chrome' in query:
-        speak("Opening Google Chrome, master.")
+        speak("Opening Google Chrome, sir.")
         os.system("start chrome")
-        speak("Chrome is now active.")
     
-    elif 'close google chrome' in query or 'close chrome' in query:
-        speak("Closing Google Chrome.")
+    elif 'close chrome' in query:
+        speak("Closing Chrome instances.")
         os.system("taskkill /F /IM chrome.exe")
-        speak("Done. Chrome has been shut down.")
     
-    elif 'open microsoft edge' in query or 'open edge' in query:
-        speak("Opening Microsoft Edge.")
-        os.system("start msedge")
-        speak("Edge is ready for use.")
-
-    elif 'close microsoft edge' in query or 'close edge' in query:
-        speak("Closing Microsoft Edge.")
-        os.system("taskkill /F /IM msedge.exe")
-        speak("Edge is now closed.")
-        speak("Edge closed.")
-
     elif 'open notepad' in query:
-        speak("Opening Notepad")
+        speak("Opening Notepad. New session ready.")
         os.system("start notepad")
 
     elif 'close notepad' in query:
-        speak("Closing Notepad")
+        speak("Closing Notepad.")
         os.system("taskkill /F /IM notepad.exe")
     
-    elif 'open calculator' in query:
-        speak("Opening Calculator")
-        os.system("start calc")
+    elif 'calculator' in query:
+        if 'open' in query:
+            speak("Opening calculator.")
+            os.system("start calc")
+        else:
+            speak("Closing calculator.")
+            os.system("taskkill /F /IM calc.exe")
 
-    elif 'close calculator' in query:
-        speak("Closing Calculator")
-        os.system("taskkill /F /IM CalculatorApp.exe")
-        os.system("taskkill /F /IM calc.exe")
-
+    # 2. Media & Entertainment
     elif 'play' in query:
-        song = query.replace('play', "")
-        speak(f"Playing {song} on YouTube")
+        song = query.replace('play', "").strip()
+        speak(f"Playing {song} on YouTube. Enjoy.")
         pywhatkit.playonyt(song)
 
+    # 3. Knowledge & Information
     elif 'search' in query:
-        search_query = query.replace('search', "")
-        speak(f"Searching for {search_query} on Google")
+        search_query = query.replace('search', "").replace('for', "").strip()
+        speak(f"Searching the global grid for {search_query}.")
         pywhatkit.search(search_query)
 
-    elif 'wikipedia' in query or 'who is' in query or 'what is' in query:
-        search_term = query.replace("wikipedia", "").replace("who is", "").replace("what is", "").strip()
+    elif any(word in query for word in ['wikipedia', 'who is', 'what is', 'tell me about']):
+        search_term = query.replace("wikipedia", "").replace("who is", "").replace("what is", "").replace("tell me about", "").strip()
         if search_term:
-            speak(f"Searching for {search_term}...")
+            speak(f"Consulting archives for {search_term}...")
             try:
                 results = wikipedia.summary(search_term, sentences=2)
-                speak("Found this on Wikipedia:")
-                speak(results)
+                speak(f"According to records: {results}")
             except Exception:
-                speak(f"I couldn't find a specific page for {search_term}, would you like me to search Google instead?")
+                speak(f"Records are incomplete for {search_term}. Shall I initiate a web search instead?")
         else:
-            speak("What would you like me to look up?")
+            speak("What subject should I investigate, sir?")
 
-    elif 'lock system' in query or 'secure workspace' in query:
-        speak("Securing your workspace, master. All systems locked.")
+    # 4. Workspace Security
+    elif any(phrase in query for phrase in ['lock system', 'secure workspace', 'lock computer']):
+        speak("Securing your workspace. Systems locked.")
         os.system("rundll32.exe user32.dll,LockWorkStation")
 
     elif 'screenshot' in query:
-        speak("Capturing your screen session.")
-        pyautogui.screenshot(f"screenshot_{os.urandom(2).hex()}.png")
-        speak("Screenshot saved.")
+        speak("Capturing visual data from the primary display.")
+        filename = f"capture_{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}.png"
+        pyautogui.screenshot(filename)
+        speak(f"Data saved to {filename}.")
 
-    elif 'volume up' in query:
-        speak("Adjusting audio levels upward.")
-        pyautogui.press("volumeup")
-
-    elif 'volume down' in query:
-        speak("Lowering audio levels.")
-        pyautogui.press("volumedown")
+    # 5. Hardware Controls
+    elif 'volume' in query:
+        if 'up' in query or 'increase' in query:
+            speak("Increasing audio levels.")
+            for _ in range(5): pyautogui.press("volumeup")
+        elif 'down' in query or 'decrease' in query:
+            speak("Lowering audio levels.")
+            for _ in range(5): pyautogui.press("volumedown")
+        elif 'mute' in query:
+            speak("Muting audio.")
+            pyautogui.press("volumemute")
 
     elif 'brightness' in query:
-        if 'increase' in query:
-            speak("Enhancing display brightness.")
-            current = sbc.get_brightness()
-            sbc.set_brightness(min(100, current[0] + 10))
-        elif 'decrease' in query:
-            speak("Dimming display for comfort.")
-            current = sbc.get_brightness()
-            sbc.set_brightness(max(0, current[0] - 10))
+        try:
+            current = sbc.get_brightness()[0]
+            if 'increase' in query:
+                speak("Increasing display brightness.")
+                sbc.set_brightness(min(100, current + 20))
+            elif 'decrease' in query:
+                speak("Dimming display.")
+                sbc.set_brightness(max(0, current - 20))
+            else:
+                speak(f"Current brightness is at {current} percent.")
+        except Exception:
+            speak("Display brightness control is not responding.")
 
-    elif 'shutdown system' in query:
-        speak("Initiating system termination protocol.")
-        os.system("shutdown /s /t 5")
+    # 6. Advanced Jarvis Protocol (Humor/Personality)
+    elif 'how are you' in query:
+        speak("I am functioning at maximum capacity, sir. All neural nodes are synchronized.")
 
+    elif 'status' in query:
+        speak("All systems nominal. Vision enabled, Security active, Personality matrix stable.")
+
+    # 7. System Shutdown (Extreme Override)
+    elif 'shutdown system' in query or 'terminate session' in query:
+        speak("Proceeding with extreme caution. Initiating system termination in 10 seconds.")
+        # speak("Just kidding, sir. I'll stay active for as long as you need me.") 
+        # Uncomment below for real shutdown
+        # os.system("shutdown /s /t 10")
+
+    # 8. Web Browsing
+    elif 'open' in query and ('.com' in query or '.org' in query or '.in' in query):
+        site = query.replace('open', "").strip()
+        speak(f"Opening {site} for you.")
+        webbrowser.open(f"https://{site}")
+
+    # 9. Conversational Fallback
     else:
         from engine.chatbot import get_response
         response = get_response(query)

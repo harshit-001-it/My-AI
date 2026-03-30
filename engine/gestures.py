@@ -1,36 +1,32 @@
-try:
-    import mediapipe as mp
-    from mediapipe.python.solutions import hands as mp_hands
-    from mediapipe.python.solutions import drawing_utils as mp_draw
-    HAS_MEDIAPIPE = True
-except (ImportError, AttributeError):
-    HAS_MEDIAPIPE = False
-    print("Warning: MediaPipe solutions not found. Gesture recognition disabled.")
-
+import cv2
 import threading
 import time
+import mediapipe as mp
 from engine.command import execute_command
 from engine.speech import speak
 
+# MediaPipe Initialization
+mp_hands = mp.solutions.hands
+mp_draw = mp.solutions.drawing_utils
+
 class GestureProcessor:
     def __init__(self):
-        if not HAS_MEDIAPIPE: return
-        self.mp_hands = mp_hands
-        self.hands = self.mp_hands.Hands(
+        self.hands = mp_hands.Hands(
             static_image_mode=False,
             max_num_hands=1,
             min_detection_confidence=0.7,
             min_tracking_confidence=0.5
         )
-        self.mp_draw = mp.solutions.drawing_utils
         self.is_running = False
         self.last_gesture_time = 0
-        self.cooldown = 2.0 # Seconds between gesture triggers
+        self.cooldown = 1.5 
+        self.prev_x = 0
+        self.prev_y = 0
 
     def start(self):
         self.is_running = True
         threading.Thread(target=self._process, daemon=True).start()
-        print("Gesture recognition system active.")
+        print("Jarvis Vision: Gesture Node Active.")
 
     def stop(self):
         self.is_running = False
@@ -39,10 +35,8 @@ class GestureProcessor:
         cap = cv2.VideoCapture(0)
         while self.is_running:
             ret, frame = cap.read()
-            if not ret:
-                continue
+            if not ret: continue
 
-            # Flip for mirror effect and convert to RGB
             frame = cv2.flip(frame, 1)
             rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
             results = self.hands.process(rgb_frame)
@@ -53,55 +47,77 @@ class GestureProcessor:
                     if gesture and (time.time() - self.last_gesture_time > self.cooldown):
                         self._trigger_action(gesture)
                         self.last_gesture_time = time.time()
+                    
+                    # Track movement for swipes/slides
+                    self._track_movement(hand_landmarks)
 
-            # Optional: Show debug window during development
-            # cv2.imshow("Niva Vision", frame)
+            # In production, we don't need a debug window unless requested
             # if cv2.waitKey(1) & 0xFF == ord('q'): break
 
         cap.release()
-        cv2.destroyAllWindows()
 
     def _detect_gesture(self, landmarks):
-        """Simple heuristic gesture detection."""
-        # Get landmark points
+        """Advanced gesture detection logic."""
         lm = landmarks.landmark
         
-        # 1. 'Box' Gesture (Index and Thumb tips close, others folded)
-        # We check distance between thumb tip (4) and index tip (8)
-        dist_thumb_index = ((lm[4].x - lm[8].x)**2 + (lm[4].y - lm[8].y)**2)**0.5
-        
-        # Check if other fingers are folded (tips below pips)
-        middle_folded = lm[12].y > lm[10].y
-        ring_folded = lm[16].y > lm[14].y
-        pinky_folded = lm[20].y > lm[18].y
-
-        if dist_thumb_index < 0.05 and middle_folded and ring_folded and pinky_folded:
-            return "BOX"
-
-        # 2. 'Peace/V' Gesture (Index and Middle up, others folded)
+        # Landmarks: 4(thumb_tip), 8(index_tip), 12(middle_tip), 16(ring_tip), 20(pinky_tip)
+        # Check if fingers are up
         index_up = lm[8].y < lm[6].y
         middle_up = lm[12].y < lm[10].y
-        if index_up and middle_up and ring_folded and pinky_folded:
+        ring_up = lm[16].y < lm[14].y
+        pinky_up = lm[20].y < lm[18].y
+        thumb_up = lm[4].x > lm[3].x if lm[4].x > 0.5 else lm[4].x < lm[3].x
+
+        # 1. 'Stop' (All fingers up)
+        if index_up and middle_up and ring_up and pinky_up:
+            return "STOP"
+
+        # 2. 'Peace' (Index and Middle up)
+        if index_up and middle_up and not ring_up and not pinky_up:
             return "PEACE"
 
-        # 3. 'Open Palm' (All up)
-        if index_up and middle_up and not ring_folded and not pinky_folded:
-            return "PALM"
+        # 3. 'OK / Pinch' (Index and Thumb close)
+        dist_it = ((lm[4].x - lm[8].x)**2 + (lm[4].y - lm[8].y)**2)**0.5
+        if dist_it < 0.05 and not middle_up and not ring_up:
+            return "PINCH"
+
+        # 4. 'Call Me' (Thumb and Pinky up)
+        if thumb_up and pinky_up and not index_up and not middle_up and not ring_up:
+            return "CALL"
 
         return None
 
+    def _track_movement(self, landmarks):
+        """Detects swipes or slides."""
+        curr_x = landmarks.landmark[8].x # Index tip
+        curr_y = landmarks.landmark[8].y
+        
+        # Simple vertical swipe for volume
+        if abs(curr_y - self.prev_y) > 0.1:
+            if curr_y < self.prev_y: # Swipe Up
+                pass # Trigger volume up event
+            else: # Swipe Down
+                pass # Trigger volume down event
+        
+        self.prev_x = curr_x
+        self.prev_y = curr_y
+
     def _trigger_action(self, gesture):
-        print(f"Gesture Detected: {gesture}")
-        if gesture == "BOX":
-            speak("Gesture recognized: Opening application launcher.")
-            execute_command("open calculator") # Example action
+        print(f"Jarvis Vision: Logic Cluster matched gesture -> {gesture}")
+        if gesture == "STOP":
+            speak("All ongoing tasks paused.")
         elif gesture == "PEACE":
-            speak("Peace gesture detected. All systems nominal.")
-        elif gesture == "PALM":
-            # Potentially used to 'pause' or 'stop' speech
-            pass
+            speak("Systems are green, sir.")
+        elif gesture == "PINCH":
+            execute_command("calculator open")
+        elif gesture == "CALL":
+            speak("Initiating secure communication link.")
 
 def start_gestures():
-    processor = GestureProcessor()
-    processor.start()
-    return processor
+    try:
+        processor = GestureProcessor()
+        processor.start()
+        return processor
+    except Exception as e:
+        print(f"Failed to start GestureProcessor: {e}")
+        return None

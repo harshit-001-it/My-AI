@@ -8,12 +8,13 @@ requests
 screen_brightness_control
 opencv-python
 deep-translator
+pygame
 
 # Voice & Face & Gestures
 SpeechRecognition
 PyAudio
+edge-tts
 setuptools<71
-dlib-bin
 face_recognition_models
 face_recognition
 mediapipe
