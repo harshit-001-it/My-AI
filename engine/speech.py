@@ -17,6 +17,18 @@ user_lang = "en"
 recognition_lang = "en-IN"
 is_speaking = False
 
+def switch_language(lang_code):
+    """Switches the global language state. 'en' or 'hi'."""
+    global user_lang, recognition_lang
+    if lang_code == "hi":
+        user_lang = "hi"
+        recognition_lang = "hi-IN"
+        speak("Hindi language protocol activated. I am now listening in your mother tongue, Sir.")
+    else:
+        user_lang = "en"
+        recognition_lang = "en-IN"
+        speak("English language protocol restored. All systems standardized.")
+
 # Speech Queue
 speech_queue = queue.Queue()
 
