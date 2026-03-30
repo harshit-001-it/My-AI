@@ -5,12 +5,14 @@ import threading
 import eel
 import psutil
 import pygetwindow as gw
-from engine.speech import speak, listen
-from engine.command import execute_command
-from engine.face_auth import authenticate
-from engine.gestures import start_gestures
-from engine.intelligence import get_briefing
-from engine.proactive import get_proactive_suggestion
+
+# Production-Grade Modular Imports
+from engine.io.speech import speak, listen
+from engine.core.command import execute_command
+from engine.sensing.face_auth import authenticate
+from engine.sensing.gestures import start_gestures
+from engine.sensing.intelligence import get_briefing
+from engine.sensing.proactive import get_proactive_suggestion
 
 # Configuration
 eel.init('www')
@@ -26,7 +28,7 @@ def trigger_auth():
     if authenticate():
         # Transition to Dashboard
         eel.show_dashboard()() # Call JS function
-        threading.Thread(target=jarvis_loop, daemon=True).start()
+        threading.Thread(target=niva_loop, daemon=True).start()
         # Start Workers
         threading.Thread(target=telemetry_worker, daemon=True).start()
         threading.Thread(target=media_sensing_worker, daemon=True).start()
@@ -41,7 +43,7 @@ def manual_command(text):
     execute_command(text)
 
 @eel.expose
-def shutdown_jarvis():
+def shutdown_niva():
     speak("Synchronizing final data packets. Goodbye, Master.")
     os._exit(0)
 
@@ -49,11 +51,11 @@ def shutdown_jarvis():
 # Core Logic Loop
 # ──────────────────────────────────────────────
 
-def jarvis_loop():
+def niva_loop():
     """Main background loop for processing voice commands."""
-    print("Jarvis Logic Node: Online.")
+    print("Niva Logic Node: Online.")
     
-    wake_words = ['jarvis', 'javis', 'jarvis', 'hey jarvis', 'hi jarvis']
+    wake_words = ['niva', 'neva', 'niva ai', 'hey niva', 'hi niva']
     
     while True:
         # Communicate to UI that we are listening
@@ -77,7 +79,7 @@ def jarvis_loop():
                 if not query_lower:
                     speak("I am here, Sir. How can I assist?")
                 else:
-                    print(f"Jarvis Logic: Processing intent -> {query_lower}")
+                    print(f"Niva Logic: Processing intent -> {query_lower}")
                     execute_command(query_lower)
             
         eel.sleep(0.5)
@@ -149,7 +151,7 @@ def proactive_worker():
 
 if __name__ == '__main__':
     # Start on the security screen
-    print("Initialising JARVIS Core...")
+    print("Initialising NIVA Core...")
     
     try:
         # Launch window (Chrome app mode for premium feel)

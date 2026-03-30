@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8"/>
     <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-    <title>JARVIS_OS | DASHBOARD</title>
+    <title>NIVA_OS | PRODUCTION_GRADE_AI</title>
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet"/>
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
@@ -12,7 +12,7 @@
             darkMode: "class",
             theme: {
               extend: {
-                colors: { "surface-container": "#1a1919", "primary": "#99f7ff", "background": "#0e0e0e", "on-surface": "#ffffff", "surface-variant": "#262626" },
+                colors: { "surface-container": "#1a1919", "primary": "#00f2ff", "background": "#0e0e0e", "on-surface": "#ffffff", "surface-variant": "#262626" },
                 fontFamily: { "headline": ["Space Grotesk"], "body": ["Inter"] },
               },
             },
@@ -21,135 +21,129 @@
     <style>
         body { background-color: #0e0e0e; color: #ffffff; overflow: hidden; }
         .glass-panel { background: rgba(38, 38, 38, 0.4); backdrop-filter: blur(20px); border: 1px solid rgba(73, 72, 71, 0.15); transition: all 0.5s ease; }
-        .orb-glow { box-shadow: 0 0 80px 20px rgba(153, 247, 255, 0.2); }
-        .text-glow { text-shadow: 0 0 10px rgba(153, 247, 255, 0.5); }
-        .wave-bar { transition: height 0.1s ease; }
-        .matrix-overlay { transition: opacity 0.5s ease, transform 0.5s ease; }
+        .orb-glow { box-shadow: 0 0 100px 30px rgba(0, 242, 255, 0.15); }
+        .text-glow { text-shadow: 0 0 15px rgba(0, 242, 255, 0.6); }
+        .wave-bar { transition: height 0.1s ease; border-radius: 2px; }
         .alert-glow { animation: alertPulse 2s infinite; }
-        .privacy-shield { backdrop-filter: blur(80px); background: rgba(0,0,0,0.8); transition: all 1s ease; }
-        @keyframes alertPulse { 0% { box-shadow: 0 0 10px rgba(239, 68, 68, 0.5); border-color: rgba(239, 68, 68, 0.5); } 50% { box-shadow: 0 0 30px rgba(239, 68, 68, 0.8); border-color: rgba(239, 68, 68, 1); } 100% { box-shadow: 0 0 10px rgba(239, 68, 68, 0.5); border-color: rgba(239, 68, 68, 0.5); } }
-        .focus-hidden { opacity: 0 !important; pointer-events: none !important; transform: scale(0.9) !important; }
+        .privacy-shield { backdrop-filter: blur(100px); background: rgba(0,0,0,0.85); transition: all 1.2s ease; }
+        @keyframes alertPulse { 0% { box-shadow: 0 0 15px rgba(239, 68, 68, 0.5); } 50% { box-shadow: 0 0 45px rgba(239, 68, 68, 0.9); } 100% { box-shadow: 0 0 15px rgba(239, 68, 68, 0.5); } }
+        .focus-hidden { opacity: 0 !important; pointer-events: none !important; transform: scale(0.95) !important; filter: blur(10px); }
         
-        /* Node Status Indicator */
-        .status-dot { width: 6px; height: 6px; border-radius: 50%; display: inline-block; }
-        .status-online { background-color: #99f7ff; box-shadow: 0 0 8px #99f7ff; }
-        .status-standby { background-color: #fbbf24; box-shadow: 0 0 8px #fbbf24; }
+        /* Mental State Dots */
+        .status-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+        .status-online { background-color: #00f2ff; box-shadow: 0 0 10px #00f2ff; }
+        .status-standby { background-color: #fbbf24; box-shadow: 0 0 10px #fbbf24; }
+        .status-processing { background-color: #9333ea; box-shadow: 0 0 10px #9333ea; }
+        
+        marquee { letter-spacing: 0.2em; font-weight: 300; }
     </style>
 </head>
-<body class="font-body selection:bg-primary/30">
-    <header class="fixed top-0 w-full flex justify-between items-center px-8 py-6 z-50 bg-transparent">
-        <div class="flex items-center gap-8">
-            <div class="text-xl font-bold tracking-tighter text-white font-headline">JARVIS_OS</div>
-            <nav id="top-nav" class="hidden md:flex gap-6 transition-all duration-500">
-                <a class="font-space-grotesk tracking-widest uppercase text-xs text-primary border-b-2 border-primary" href="#">SYNOPSIS</a>
-                <a class="font-space-grotesk tracking-widest uppercase text-xs text-gray-500 hover:text-cyan-300 cursor-pointer" onclick="toggleMatrix()">TASK_MATRIX</a>
+<body class="font-body selection:bg-primary/30 selection:text-white">
+    <header class="fixed top-0 w-full flex justify-between items-center px-12 py-8 z-50 bg-transparent">
+        <div class="flex items-center gap-10">
+            <div class="text-2xl font-bold tracking-[0.4em] text-white font-headline">NIVA_OS</div>
+            <nav id="top-nav" class="hidden lg:flex gap-8 transition-all duration-700">
+                <a class="font-headline tracking-[0.2em] uppercase text-[10px] text-primary border-b border-primary pb-1" href="#">DASHBOARD</a>
+                <a class="font-headline tracking-[0.2em] uppercase text-[10px] text-gray-500 hover:text-primary cursor-pointer transition-colors">INTELLIGENCE_GRID</a>
                 <div class="h-4 w-px bg-white/10 my-auto"></div>
-                <div class="flex items-center gap-2">
-                    <span id="current-lang-icon" class="material-symbols-outlined text-primary text-xs">translate</span>
-                    <span id="current-lang" class="text-[10px] font-headline tracking-widest text-primary uppercase">EN_AUTO</span>
+                <div class="flex items-center gap-3">
+                    <span id="current-lang-icon" class="material-symbols-outlined text-primary text-xs">language</span>
+                    <span id="current-lang" class="text-[10px] font-headline tracking-widest text-primary uppercase">EN_NATIVE</span>
                 </div>
             </nav>
         </div>
-        <div class="flex items-center gap-4">
-            <span class="material-symbols-outlined text-cyan-400 cursor-pointer" onclick="eel.shutdown_jarvis()">power_settings_new</span>
+        <div class="flex items-center gap-6">
+            <div id="connection-status" class="flex items-center gap-2">
+                <div class="status-dot status-online animate-pulse"></div>
+                <span class="text-[10px] font-headline tracking-widest text-gray-400 uppercase">Neural_Sync_Stable</span>
+            </div>
+            <span class="material-symbols-outlined text-red-500 cursor-pointer hover:scale-110 transition-transform" onclick="eel.shutdown_niva()">power_settings_new</span>
         </div>
     </header>
 
     <!-- PRIVACY SHIELD -->
     <div id="privacy-shield" class="fixed inset-0 z-[100] privacy-shield opacity-0 pointer-events-none flex flex-col items-center justify-center">
-        <span class="material-symbols-outlined text-primary text-9xl animate-pulse mb-8">security</span>
-        <div class="text-4xl font-headline tracking-[0.5em] text-white uppercase mb-2">Privacy_Shield_Active</div>
+        <span class="material-symbols-outlined text-primary text-[12rem] animate-pulse mb-10">lock_open</span>
+        <div class="text-5xl font-headline tracking-[0.8em] text-white uppercase mb-4 opacity-50">Master_Presence_Lost</div>
+        <div class="text-xs font-headline tracking-[0.4em] text-primary uppercase">Workspace_Secured_by_Niva</div>
     </div>
 
-    <!-- NEWS OVERLAY -->
-    <div id="news-hud" class="fixed top-20 left-1/2 -translate-x-1/2 z-40 bg-primary/5 px-6 py-2 border-x border-primary/20 backdrop-blur-md overflow-hidden w-[40rem] flex items-center gap-4 transition-all duration-500">
-        <span class="text-[10px] font-headline text-primary tracking-[0.5em] uppercase whitespace-nowrap">Global_Briefing</span>
-        <marquee id="news-ticker" class="text-xs text-white/60 font-body tracking-wider uppercase">SYNCING_WITH_GLOBAL_GRID...</marquee>
+    <!-- GLOBAL NEWS BAND -->
+    <div id="news-hud" class="fixed top-24 left-1/2 -translate-x-1/2 z-40 bg-white/5 border-y border-white/5 backdrop-blur-xl w-[50rem] px-8 py-3 flex items-center justify-between transition-all duration-700">
+        <span class="text-[9px] font-headline text-primary tracking-[0.4em] uppercase whitespace-nowrap mr-6">Global_Intelligence_Stream</span>
+        <marquee id="news-ticker" class="text-[11px] text-white/50 font-body tracking-wider uppercase">SYNCHRONIZING_WITH_NIVA_CLOUD_GRID_v1.0...</marquee>
     </div>
 
-    <main class="h-screen w-full relative flex items-center justify-center">
-        <!-- TOP LEFT OVERLAY -->
-        <div id="telemetry-time" class="absolute top-24 left-10 flex flex-col gap-1 z-20 transition-all duration-500">
-            <div class="flex items-baseline gap-3">
-                <span id="system-time" class="text-4xl font-headline font-light tracking-tight text-white">00:00</span>
-                <span class="text-xs font-headline tracking-[0.3em] text-gray-500 uppercase">SYSTEM_TIME</span>
-            </div>
-            <div class="flex items-center gap-4 mt-2">
-                <div class="flex items-center gap-2">
-                    <span id="weather-temp" class="text-sm text-white/80 font-headline tracking-widest">--°C</span>
-                    <span id="weather-icon" class="material-symbols-outlined text-primary text-xs">wb_sunny</span>
+    <main class="h-screen w-full relative flex items-center justify-center overflow-hidden">
+        <!-- BACKGROUND AMBIENCE -->
+        <div class="absolute inset-0 z-0 bg-[radial-gradient(circle_at_center,rgba(0,242,255,0.03),transparent_70%)]"></div>
+
+        <!-- LEFT HUD: TELEMETRY -->
+        <div id="left-hud" class="absolute left-12 top-1/2 -translate-y-1/2 z-20 flex flex-col gap-8 transition-all duration-700">
+            <div class="glass-panel w-80 p-8 rounded-none relative">
+                <div class="absolute -left-[1px] top-0 h-16 w-[3px] bg-primary shadow-[0_0_15px_rgba(0,242,255,0.8)]"></div>
+                <div class="text-[10px] font-headline tracking-[0.3em] text-gray-500 uppercase mb-6">Neural Telemetry</div>
+                <div class="flex flex-col gap-6">
+                    <div>
+                        <div class="flex justify-between text-[11px] mb-2 font-headline uppercase tracking-widest"><span class="text-white/80">CPU_Engine</span><span id="cpu-percent">0%</span></div>
+                        <div class="w-full h-[2px] bg-white/10 overflow-hidden"><div id="cpu-bar" class="h-full bg-primary w-0 transition-all duration-700"></div></div>
+                    </div>
                 </div>
+            </div>
+            <div class="glass-panel w-80 p-8">
+                <div class="text-[10px] font-headline tracking-[0.3em] text-gray-500 uppercase mb-6">Master_Intent_Proxy</div>
+                <div id="intent-display" class="text-2xl font-headline text-white tracking-widest uppercase leading-tight">SYSTEM_LISTENING</div>
             </div>
         </div>
 
-        <!-- RIGHT OVERLAY: MESSAGES & SYSTEM MATRIX -->
-        <div id="right-hud" class="absolute top-24 right-10 flex flex-col gap-6 z-20 transition-all duration-500">
-            <div class="glass-panel w-72 p-6 rounded-none relative">
-                <div class="absolute -right-[1px] top-0 h-12 w-[2px] bg-primary"></div>
-                <div class="text-[10px] font-headline tracking-[0.2em] text-gray-500 uppercase mb-4">Core Matrix Status</div>
-                <div class="flex flex-col gap-3">
-                    <div class="flex justify-between items-center bg-white/5 p-2 border-l border-primary/20">
-                        <span class="text-[10px] text-white/60 tracking-widest uppercase">Biometric Hub</span>
-                        <div class="status-dot status-online"></div>
-                    </div>
-                    <div class="flex justify-between items-center bg-white/5 p-2 border-l border-primary/20">
-                        <span class="text-[10px] text-white/60 tracking-widest uppercase">Neural Brain</span>
-                        <div class="status-dot status-online"></div>
-                    </div>
-                    <div class="flex justify-between items-center bg-white/5 p-2 border-l border-primary/20">
-                        <span class="text-[10px] text-white/60 tracking-widest uppercase">Vision Proxy</span>
-                        <div id="vision-status-dot" class="status-dot status-standby"></div>
-                    </div>
+        <!-- CENTER ORB -->
+        <div class="relative flex items-center justify-center z-10 transition-transform duration-700 hover:scale-105" id="central-orb-container">
+            <div class="absolute w-[800px] h-[800px] bg-primary/5 rounded-full blur-[120px]"></div>
+            <div class="w-72 h-72 rounded-full bg-gradient-to-tr from-background via-[#1a1919] to-primary/20 flex items-center justify-center orb-glow border border-primary/20 relative backdrop-blur-3xl overflow-hidden" id="central-orb">
+                <div class="flex items-center gap-2 h-24" id="wave-container">
+                    <div class="w-[3px] bg-primary h-6 wave-bar opacity-40"></div>
+                    <div class="w-[3px] bg-primary h-12 wave-bar opacity-60"></div>
+                    <div class="w-[3px] bg-primary h-20 wave-bar text-glow"></div>
+                    <div class="w-[3px] bg-primary h-12 wave-bar opacity-60"></div>
+                    <div class="w-[3px] bg-primary h-6 wave-bar opacity-40"></div>
                 </div>
             </div>
-            <div class="glass-panel w-72 p-6 rounded-none relative">
-                <div class="text-[10px] font-headline tracking-[0.2em] text-gray-500 uppercase mb-4">Media Sync</div>
-                <div class="flex items-center gap-4">
-                    <div class="w-12 h-12 bg-primary/5 border border-primary/20 flex items-center justify-center"><span class="material-symbols-outlined text-primary text-xl">graphic_eq</span></div>
-                    <div class="flex flex-col">
-                        <span id="media-title" class="text-xs font-headline font-bold text-white tracking-tighter truncate w-32 uppercase">NO_ACTIVE_MEDIA</span>
-                    </div>
-                </div>
+            <div class="absolute -top-40 text-center" id="sync-indicator">
+                <div class="text-[11px] font-headline tracking-[0.6em] text-primary/40 uppercase mb-3">NEURAL_SYNC_PROTOCOL</div>
+                <div class="text-6xl font-headline font-bold text-white tracking-tighter text-glow" id="sync-rate">99.8%</div>
             </div>
         </div>
 
-        <!-- CENTER INTELLIGENCE ORB -->
-        <div class="relative flex items-center justify-center z-10">
-            <div class="absolute w-[600px] h-[600px] bg-primary/5 rounded-full blur-[100px]"></div>
-            <div class="w-64 h-64 rounded-full bg-gradient-to-br from-primary via-cyan-500 to-blue-900 flex items-center justify-center orb-glow border border-white/20 relative overflow-hidden" id="central-orb">
-                <div class="flex items-end gap-1 h-20" id="wave-container">
-                    <div class="w-1 bg-white h-4 wave-bar"></div>
-                    <div class="w-1 bg-white h-8 wave-bar"></div>
-                    <div class="w-1 bg-white h-12 wave-bar"></div>
-                    <div class="w-1 bg-white h-8 wave-bar"></div>
-                    <div class="w-1 bg-white h-4 wave-bar"></div>
-                </div>
-            </div>
-            <div class="absolute -top-32 text-center" id="sync-indicator">
-                <div class="text-[10px] font-headline tracking-[0.5em] text-primary/60 uppercase mb-2">NEURAL_SYNC_RATE</div>
-                <div class="text-4xl font-headline font-bold text-white text-glow" id="sync-rate">98.4%</div>
-            </div>
-        </div>
-
-        <!-- TELEMETRY & INTENT CARD (LEFT) -->
-        <div id="left-hud" class="absolute left-10 top-1/2 -translate-y-1/2 z-20 flex flex-col gap-6 transition-all duration-500">
-            <div class="glass-panel w-72 p-6 rounded-none relative">
-                <div class="absolute -left-[1px] top-0 h-12 w-[2px] bg-primary"></div>
-                <div class="text-[10px] font-headline tracking-[0.2em] text-gray-500 uppercase mb-4">Signal Telemetry</div>
+        <!-- RIGHT HUD: MEDIA & SYSTEM STATUS -->
+        <div id="right-hud" class="absolute right-12 top-1/2 -translate-y-1/2 z-20 flex flex-col gap-8 transition-all duration-700">
+            <div class="glass-panel w-80 p-8 rounded-none relative">
+                 <div class="absolute -right-[1px] top-0 h-16 w-[3px] bg-primary shadow-[0_0_15px_rgba(0,242,255,0.8)]"></div>
+                <div class="text-[10px] font-headline tracking-[0.3em] text-gray-500 uppercase mb-6">Mental_Node_Matrix</div>
                 <div class="flex flex-col gap-4">
-                    <div class="flex justify-between text-[10px] mb-1"><span class="text-primary tracking-widest">CPU_LOAD</span><span id="cpu-percent">0%</span></div>
-                    <div class="w-full h-1 bg-white/5 rounded-full overflow-hidden"><div id="cpu-bar" class="h-full bg-primary w-0 transition-all duration-500"></div></div>
+                    <div class="flex justify-between items-center bg-white/5 px-4 py-3 border-l border-white/10 hover:bg-white/10 transition-colors">
+                        <span class="text-[10px] text-white/60 tracking-[0.2em] uppercase">Security_Core</span>
+                        <div class="status-dot status-online"></div>
+                    </div>
+                    <div class="flex justify-between items-center bg-white/5 px-4 py-3 border-l border-white/10 hover:bg-white/10 transition-colors">
+                        <span class="text-[10px] text-white/60 tracking-[0.2em] uppercase">Reasoning_Node</span>
+                        <div id="reasoning-dot" class="status-dot status-online"></div>
+                    </div>
                 </div>
             </div>
-            <div class="glass-panel w-72 p-6">
-                <div class="text-[10px] font-headline tracking-[0.2em] text-gray-500 uppercase mb-4">Detected Intent</div>
-                <div id="intent-display" class="text-xl font-headline text-white tracking-tighter">WAITING_FOR_INPUT...</div>
+            <div class="glass-panel w-80 p-8">
+                <div class="text-[10px] font-headline tracking-[0.3em] text-gray-500 uppercase mb-6">Active_Media_Link</div>
+                <div class="flex items-center gap-6">
+                    <div class="w-14 h-14 bg-primary/10 border border-primary/20 flex items-center justify-center rotate-45 group"><span class="material-symbols-outlined text-primary text-2xl -rotate-45">audiotrack</span></div>
+                    <div class="flex flex-col">
+                        <span id="media-title" class="text-xs font-headline font-bold text-white tracking-widest uppercase truncate w-36">IDLE_STATE</span>
+                    </div>
+                </div>
             </div>
         </div>
 
-        <!-- STATUS OVERLAY -->
-        <div class="absolute bottom-10 left-1/2 -translate-x-1/2 text-center z-20">
-            <div id="jarvis-status" class="text-xs font-headline tracking-[0.6em] text-primary animate-pulse uppercase">SYSTEM_STANDBY</div>
+        <!-- BOTTOM STATUS BAR -->
+        <div class="absolute bottom-12 left-1/2 -translate-x-1/2 text-center z-20">
+            <div id="niva-status" class="text-xs font-headline tracking-[0.8em] text-primary uppercase animate-pulse border-y border-primary/20 py-2 px-12">System_Ready_Master</div>
         </div>
     </main>
 
@@ -158,17 +152,12 @@
         let isFocus = false;
         function toggleFocus() {
             isFocus = !isFocus;
-            const elements = ["news-hud", "telemetry-time", "right-hud", "left-hud", "sync-indicator"];
+            const elements = ["news-hud", "left-hud", "right-hud", "sync-indicator", "top-nav"];
             elements.forEach(id => {
                 const el = document.getElementById(id);
                 if (isFocus) el.classList.add('focus-hidden');
                 else el.classList.remove('focus-hidden');
             });
-        }
-
-        eel.expose(update_language);
-        function update_language(lang) {
-            document.getElementById('current-lang').innerText = lang.toUpperCase();
         }
 
         eel.expose(set_privacy_shield);
@@ -178,37 +167,31 @@
             else { shield.classList.add('opacity-0', 'pointer-events-none'); shield.classList.remove('opacity-100'); }
         }
 
-        setInterval(() => { const now = new Date(); document.getElementById('system-time').innerText = now.getHours().toString().padStart(2, '0') + ":" + now.getMinutes().toString().padStart(2, '0'); }, 1000);
-        function toggleMatrix() { const layer = document.getElementById('matrix-layer'); if (layer.classList.contains('opacity-0')) { layer.classList.remove('opacity-0', 'pointer-events-none', 'scale-110'); layer.classList.add('opacity-100', 'scale-100'); } else { layer.classList.add('opacity-0', 'pointer-events-none', 'scale-110'); layer.classList.remove('opacity-100', 'scale-100'); } }
-
         eel.expose(show_alert);
-        function show_alert(msg) { const alert = document.getElementById('alert-layer'); if(!alert) return; document.getElementById('alert-msg').innerText = msg; alert.classList.remove('translate-x-[150%]'); setTimeout(() => alert.classList.add('translate-x-[150%]'), 5000); }
+        function show_alert(msg) { /* Production Grade Notification System would go here */ }
 
         eel.expose(update_media);
         function update_media(title, artist) { document.getElementById('media-title').innerText = title.toUpperCase(); }
 
         eel.expose(update_briefing);
         function update_briefing(news, temp, condition) { 
-            document.getElementById('news-ticker').innerText = news.toUpperCase();
-            document.getElementById('weather-temp').innerText = temp;
-            const icon = document.getElementById('weather-icon');
-            if (condition.includes('CLEAR')) icon.innerText = 'wb_sunny';
-            else icon.innerText = 'cloud';
+            document.getElementById('news-ticker').innerText = news.toUpperCase() + " | TEMPERATURE: " + temp + " | GRID_STABLE";
         }
 
         const bars = document.querySelectorAll('.wave-bar');
         let waveInterval;
-        function startWave() { if (waveInterval) return; waveInterval = setInterval(() => { bars.forEach(bar => { const h = Math.floor(Math.random() * 60) + 10; bar.style.height = h + 'px'; }); }, 100); }
+        function startWave() { if (waveInterval) return; waveInterval = setInterval(() => { bars.forEach(bar => { const h = Math.floor(Math.random() * 80) + 10; bar.style.height = h + 'px'; }); }, 100); }
         function stopWave() { clearInterval(waveInterval); waveInterval = null; bars.forEach(bar => bar.style.height = '10px'); }
 
         eel.expose(update_status);
         function update_status(statusMsg) {
-            const statusEl = document.getElementById('jarvis-status');
+            const statusEl = document.getElementById('niva-status');
+            const reasoningDot = document.getElementById('reasoning-dot');
             if (!statusEl) return;
-            statusEl.innerText = statusMsg;
-            if (statusMsg === "LISTENING") startWave();
-            else if (statusMsg === "PROCESSING") bars.forEach(bar => bar.style.height = '40px');
-            else stopWave();
+            statusEl.innerText = statusMsg.replace('_', ' ');
+            if (statusMsg === "LISTENING") { startWave(); reasoningDot.className = 'status-dot status-processing'; }
+            else if (statusMsg === "PROCESSING") { bars.forEach(bar => bar.style.height = '60px'); reasoningDot.className = 'status-dot status-processing'; }
+            else { stopWave(); reasoningDot.className = 'status-dot status-online'; }
         }
 
         eel.expose(update_intent);
