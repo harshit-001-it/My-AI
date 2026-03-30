@@ -30,7 +30,7 @@ def run_diagnostic():
         "NEURAL_BRAIN": "engine.core.chatbot",
         "UI_BRIDGE": "eel",
         "VISION_SENSING": "mediapipe",
-        "SECURITY_HUB": "face_recognition",
+        "SECURITY_HUB": "engine.sensing.face_auth",
         "SPEECH_IO": "engine.io.speech",
         "TELEMETRY_STREAM": "psutil",
         "MEDIA_SENSING": "pygetwindow"

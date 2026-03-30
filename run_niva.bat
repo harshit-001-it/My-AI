@@ -16,7 +16,7 @@ if %errorlevel% neq 0 (
 
 :: Install core dependencies silently if missing
 echo [#] ANALYZING LOGIC NODES...
-pip install -r requirements.txt --quiet
+python -m pip install -r requirements.txt --quiet
 
 :: Start the NIVA controller
 echo [#] DEPLOYING OBSIDIAN_KINETIC_HUD...

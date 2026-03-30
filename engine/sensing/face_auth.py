@@ -1,74 +1,53 @@
 import os
 import time
-import numpy as np
 import cv2
-import face_recognition
-from engine.speech import speak, listen
-from engine.registry import load_registry
+import mediapipe as mp
+from engine.io.speech import speak, listen
+from engine.core.registry import get_setting
 
 # Security Constants
-DB_PATH = "engine/db"
-registry = load_registry()
-VOICE_PIN = str(registry.get("voice_pin", "1010"))
+VOICE_PIN = str(get_setting("voice_pin", "1010"))
 
 class SecurityHub:
     def __init__(self):
-        if not os.path.exists(DB_PATH):
-            os.makedirs(DB_PATH)
-        self.reference_encoding = self._load_reference()
+        # Initialize MediaPipe Face Detection
+        self.mp_face_detection = mp.solutions.face_detection
+        self.face_detector = self.mp_face_detection.FaceDetection(
+            model_selection=0, min_detection_confidence=0.8
+        )
 
-    def _load_reference(self):
-        ref_file = os.path.join(DB_PATH, "user_reference.jpg")
-        if not os.path.exists(ref_file):
-            return None
-        
-        try:
-            img = cv2.imread(ref_file)
-            rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-            encodings = face_recognition.face_encodings(rgb)
-            return encodings[0] if encodings else None
-        except Exception as e:
-            print(f"Auth Error: Memory corruption in security file. {e}")
-            return None
-
-    def face_id_scan(self):
-        """Perform a quick, non-intrusive face scan."""
-        if self.reference_encoding is None:
-            speak("Master, I have no records of your biometric data. Initiating registration.")
-            return self.register_face()
-
-        speak("Scanning biometric signatures.")
+    def face_scan(self):
+        """Perform a highly optimized biometric face presence scan."""
+        speak("Scanning physical presence grid.")
         cap = cv2.VideoCapture(0)
         start_time = time.time()
         
-        while time.time() - start_time < 8: # 8 second window
+        while time.time() - start_time < 5: # 5 second window
             ret, frame = cap.read()
             if not ret: continue
             
             rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-            face_locations = face_recognition.face_locations(rgb_frame)
-            face_encodings = face_recognition.face_encodings(rgb_frame, face_locations)
+            results = self.face_detector.process(rgb_frame)
 
-            for face_encoding in face_encodings:
-                match = face_recognition.compare_faces([self.reference_encoding], face_encoding, tolerance=0.5)
-                if True in match:
-                    cap.release()
-                    speak("Identity confirmed. Welcome back, Master.")
-                    return True
+            # If a human face is strictly detected with high confidence
+            if results.detections:
+                cap.release()
+                print("Security Hub: Face Detected via MediaPipe Core.")
+                speak("Human presence verified. Please state your authorization PIN.")
+                return self.voice_pin_verification()
         
         cap.release()
-        speak("Biometric mismatch detected. Security protocols engaged.")
+        speak("No human signatures detected. Security protocols engaged.")
         return False
 
     def voice_pin_verification(self):
         """Two-factor authentication using Voice PIN."""
-        speak("Please state your authorization PIN for level 2 clearance.")
         attempts = 3
         while attempts > 0:
             pin_query = listen()
-            # If the PIN is found as a substring (e.g. user says "my pin is 1010")
+            # If the PIN is found as a substring
             if VOICE_PIN in pin_query:
-                speak("Voice signature matched. Clearance granted.")
+                speak("Voice signature matched. Clearance granted. Welcome to Niva.")
                 return True
             else:
                 attempts -= 1
@@ -78,25 +57,7 @@ class SecurityHub:
                     speak("Authorization failed. Lockdown initiated.")
         return False
 
-    def register_face(self):
-        """Registers a new master."""
-        speak("Please look directly at the optical sensor. I'm capturing your neural map now.")
-        cap = cv2.VideoCapture(0)
-        time.sleep(2) # Give user time to position
-        ret, frame = cap.read()
-        if ret:
-            cv2.imwrite(os.path.join(DB_PATH, "user_reference.jpg"), frame)
-            self.reference_encoding = self._load_reference()
-            speak("Registration complete. Your signature has been uploaded to the local core.")
-            cap.release()
-            return True
-        cap.release()
-        return False
-
 def authenticate():
     hub = SecurityHub()
-    if hub.face_id_scan():
-        # Enhanced security: Trigger voice PIN if configured
-        # return hub.voice_pin_verification() 
-        return True
-    return False
+    # Execute the streamlined 2-step verification (Face Presence + Voice PIN)
+    return hub.face_scan()

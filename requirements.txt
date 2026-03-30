@@ -17,6 +17,4 @@ SpeechRecognition
 PyAudio
 edge-tts
 setuptools<71
-face_recognition_models
-face_recognition
 mediapipe
