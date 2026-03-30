@@ -79,6 +79,23 @@ class JarvisBrain:
             "A fascinating request. Let me synchronize with the cloud nodes for a better answer."
         ])
 
+    def identify_intent(self, text):
+        """Asks the model to identify the command intent from text."""
+        prompt = (
+            f"{self.system_prompt}\n"
+            "Identify the user's intended action from the following text. "
+            "Return ONLY a command string from this list: [open_chrome, open_notepad, lock_system, search_web, play_music, none]. "
+            "If no clear match, return 'none'.\n"
+            f"User: {text}"
+        )
+        response = self._get_api_response(prompt).lower()
+        
+        # Simple parsing for the simulated response
+        for intent in ['open_chrome', 'open_notepad', 'lock_system', 'search_web', 'play_music']:
+            if intent in response:
+                return intent
+        return "none"
+
     def get_response(self, text):
         response = self._get_api_response(text)
         self.history.append({"user": text, "jarvis": response})

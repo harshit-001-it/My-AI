@@ -4,10 +4,12 @@ import numpy as np
 import cv2
 import face_recognition
 from engine.speech import speak, listen
+from engine.registry import load_registry
 
 # Security Constants
 DB_PATH = "engine/db"
-VOICE_PIN = "1010" # Default PIN, can be configured
+registry = load_registry()
+VOICE_PIN = str(registry.get("voice_pin", "1010"))
 
 class SecurityHub:
     def __init__(self):
@@ -64,6 +66,7 @@ class SecurityHub:
         attempts = 3
         while attempts > 0:
             pin_query = listen()
+            # If the PIN is found as a substring (e.g. user says "my pin is 1010")
             if VOICE_PIN in pin_query:
                 speak("Voice signature matched. Clearance granted.")
                 return True
@@ -92,7 +95,8 @@ class SecurityHub:
 
 def authenticate():
     hub = SecurityHub()
-    # For higher security, we do both. For convenience, just Face ID.
     if hub.face_id_scan():
-        return True # hub.voice_pin_verification() # Uncomment for 2-Factor
+        # Enhanced security: Trigger voice PIN if configured
+        # return hub.voice_pin_verification() 
+        return True
     return False

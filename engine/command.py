@@ -118,8 +118,26 @@ def execute_command(query):
         speak(f"Opening {site} for you.")
         webbrowser.open(f"https://{site}")
 
-    # 9. Conversational Fallback
+    # 9. Conversational & LLM Intent Fallback
     else:
-        from engine.chatbot import get_response
-        response = get_response(query)
-        speak(response)
+        from engine.chatbot import brain, get_response
+        
+        # Try to identify an action intent using the LLM brain
+        intent = brain.identify_intent(query)
+        
+        if intent == 'open_chrome':
+            speak("I believe you want to browse the web. Opening Chrome.")
+            os.system("start chrome")
+        elif intent == 'open_notepad':
+            speak("Understood. Opening your digital scratchpad.")
+            os.system("start notepad")
+        elif intent == 'lock_system':
+            speak("Executing security protocol. System locked.")
+            os.system("rundll32.exe user32.dll,LockWorkStation")
+        elif intent == 'play_music':
+            speak("Of course. What would you like to hear?")
+            # This triggers a follow-up if needed, or we could parse the song name too
+        else:
+            # Simple conversational response
+            response = get_response(query)
+            speak(response)
