@@ -20,7 +20,7 @@
     </script>
     <style>
         body { background-color: #0e0e0e; color: #ffffff; overflow: hidden; }
-        .glass-panel { background: rgba(38, 38, 38, 0.4); backdrop-filter: blur(20px); border: 1px solid rgba(73, 72, 71, 0.15); transition: opacity 0.5s ease, transform 0.5s ease; }
+        .glass-panel { background: rgba(38, 38, 38, 0.4); backdrop-filter: blur(20px); border: 1px solid rgba(73, 72, 71, 0.15); transition: all 0.5s ease; }
         .orb-glow { box-shadow: 0 0 80px 20px rgba(153, 247, 255, 0.2); }
         .text-glow { text-shadow: 0 0 10px rgba(153, 247, 255, 0.5); }
         .wave-bar { transition: height 0.1s ease; }
@@ -28,8 +28,12 @@
         .alert-glow { animation: alertPulse 2s infinite; }
         .privacy-shield { backdrop-filter: blur(80px); background: rgba(0,0,0,0.8); transition: all 1s ease; }
         @keyframes alertPulse { 0% { box-shadow: 0 0 10px rgba(239, 68, 68, 0.5); border-color: rgba(239, 68, 68, 0.5); } 50% { box-shadow: 0 0 30px rgba(239, 68, 68, 0.8); border-color: rgba(239, 68, 68, 1); } 100% { box-shadow: 0 0 10px rgba(239, 68, 68, 0.5); border-color: rgba(239, 68, 68, 0.5); } }
-        /* Focus Mode Hide */
         .focus-hidden { opacity: 0 !important; pointer-events: none !important; transform: scale(0.9) !important; }
+        
+        /* Node Status Indicator */
+        .status-dot { width: 6px; height: 6px; border-radius: 50%; display: inline-block; }
+        .status-online { background-color: #99f7ff; box-shadow: 0 0 8px #99f7ff; }
+        .status-standby { background-color: #fbbf24; box-shadow: 0 0 8px #fbbf24; }
     </style>
 </head>
 <body class="font-body selection:bg-primary/30">
@@ -37,10 +41,13 @@
         <div class="flex items-center gap-8">
             <div class="text-xl font-bold tracking-tighter text-white font-headline">JARVIS_OS</div>
             <nav id="top-nav" class="hidden md:flex gap-6 transition-all duration-500">
-                <a class="font-space-grotesk tracking-widest uppercase text-xs text-cyan-400 border-b-2 border-cyan-400" href="#">SYNOPSIS</a>
+                <a class="font-space-grotesk tracking-widest uppercase text-xs text-primary border-b-2 border-primary" href="#">SYNOPSIS</a>
                 <a class="font-space-grotesk tracking-widest uppercase text-xs text-gray-500 hover:text-cyan-300 cursor-pointer" onclick="toggleMatrix()">TASK_MATRIX</a>
-                <a class="font-space-grotesk tracking-widest uppercase text-xs text-gray-500 hover:text-cyan-300 cursor-pointer" onclick="toggleFocus()">FOCUS_MODE</a>
-                <a class="font-space-grotesk tracking-widest uppercase text-xs text-gray-500 hover:text-cyan-300" href="vision.html">VISION_HUD</a>
+                <div class="h-4 w-px bg-white/10 my-auto"></div>
+                <div class="flex items-center gap-2">
+                    <span id="current-lang-icon" class="material-symbols-outlined text-primary text-xs">translate</span>
+                    <span id="current-lang" class="text-[10px] font-headline tracking-widest text-primary uppercase">EN_AUTO</span>
+                </div>
             </nav>
         </div>
         <div class="flex items-center gap-4">
@@ -52,13 +59,11 @@
     <div id="privacy-shield" class="fixed inset-0 z-[100] privacy-shield opacity-0 pointer-events-none flex flex-col items-center justify-center">
         <span class="material-symbols-outlined text-primary text-9xl animate-pulse mb-8">security</span>
         <div class="text-4xl font-headline tracking-[0.5em] text-white uppercase mb-2">Privacy_Shield_Active</div>
-        <div class="text-xs text-primary/60 tracking-widest uppercase">Master presence lost. Initiating biometric standby.</div>
     </div>
 
     <!-- NEWS OVERLAY -->
     <div id="news-hud" class="fixed top-20 left-1/2 -translate-x-1/2 z-40 bg-primary/5 px-6 py-2 border-x border-primary/20 backdrop-blur-md overflow-hidden w-[40rem] flex items-center gap-4 transition-all duration-500">
         <span class="text-[10px] font-headline text-primary tracking-[0.5em] uppercase whitespace-nowrap">Global_Briefing</span>
-        <div class="h-4 w-px bg-primary/20"></div>
         <marquee id="news-ticker" class="text-xs text-white/60 font-body tracking-wider uppercase">SYNCING_WITH_GLOBAL_GRID...</marquee>
     </div>
 
@@ -71,36 +76,38 @@
             </div>
             <div class="flex items-center gap-4 mt-2">
                 <div class="flex items-center gap-2">
-                    <span class="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
-                    <span class="text-sm font-headline tracking-widest text-primary uppercase">User: Master</span>
-                </div>
-                <div class="h-3 w-px bg-white/10"></div>
-                <div class="flex items-center gap-2">
                     <span id="weather-temp" class="text-sm text-white/80 font-headline tracking-widest">--°C</span>
                     <span id="weather-icon" class="material-symbols-outlined text-primary text-xs">wb_sunny</span>
                 </div>
             </div>
         </div>
 
-        <!-- RIGHT OVERLAY -->
+        <!-- RIGHT OVERLAY: MESSAGES & SYSTEM MATRIX -->
         <div id="right-hud" class="absolute top-24 right-10 flex flex-col gap-6 z-20 transition-all duration-500">
             <div class="glass-panel w-72 p-6 rounded-none relative">
                 <div class="absolute -right-[1px] top-0 h-12 w-[2px] bg-primary"></div>
-                <div class="text-[10px] font-headline tracking-[0.2em] text-gray-500 uppercase mb-4">Media Sync</div>
-                <div class="flex items-center gap-4">
-                    <div class="w-12 h-12 bg-primary/5 border border-primary/20 flex items-center justify-center"><span class="material-symbols-outlined text-primary text-xl animate-spin">graphic_eq</span></div>
-                    <div class="flex flex-col">
-                        <span id="media-title" class="text-xs font-headline font-bold text-white tracking-tighter truncate w-32 uppercase">NO_ACTIVE_MEDIA</span>
-                        <span id="media-artist" class="text-[10px] text-gray-500 uppercase tracking-widest">Master-Link-Online</span>
+                <div class="text-[10px] font-headline tracking-[0.2em] text-gray-500 uppercase mb-4">Core Matrix Status</div>
+                <div class="flex flex-col gap-3">
+                    <div class="flex justify-between items-center bg-white/5 p-2 border-l border-primary/20">
+                        <span class="text-[10px] text-white/60 tracking-widest uppercase">Biometric Hub</span>
+                        <div class="status-dot status-online"></div>
+                    </div>
+                    <div class="flex justify-between items-center bg-white/5 p-2 border-l border-primary/20">
+                        <span class="text-[10px] text-white/60 tracking-widest uppercase">Neural Brain</span>
+                        <div class="status-dot status-online"></div>
+                    </div>
+                    <div class="flex justify-between items-center bg-white/5 p-2 border-l border-primary/20">
+                        <span class="text-[10px] text-white/60 tracking-widest uppercase">Vision Proxy</span>
+                        <div id="vision-status-dot" class="status-dot status-standby"></div>
                     </div>
                 </div>
             </div>
             <div class="glass-panel w-72 p-6 rounded-none relative">
-                <div class="text-[10px] font-headline tracking-[0.2em] text-gray-500 uppercase mb-4">Communication Hub</div>
-                <div class="flex flex-col gap-3">
-                    <div class="flex justify-between items-center bg-white/5 p-2 border-l border-primary/20 cursor-pointer hover:bg-white/10 transition-all">
-                        <span class="text-[10px] text-white/60 tracking-widest">SECURE_MAIL</span>
-                        <span class="text-[10px] text-primary">03_PENDING</span>
+                <div class="text-[10px] font-headline tracking-[0.2em] text-gray-500 uppercase mb-4">Media Sync</div>
+                <div class="flex items-center gap-4">
+                    <div class="w-12 h-12 bg-primary/5 border border-primary/20 flex items-center justify-center"><span class="material-symbols-outlined text-primary text-xl">graphic_eq</span></div>
+                    <div class="flex flex-col">
+                        <span id="media-title" class="text-xs font-headline font-bold text-white tracking-tighter truncate w-32 uppercase">NO_ACTIVE_MEDIA</span>
                     </div>
                 </div>
             </div>
@@ -109,7 +116,6 @@
         <!-- CENTER INTELLIGENCE ORB -->
         <div class="relative flex items-center justify-center z-10">
             <div class="absolute w-[600px] h-[600px] bg-primary/5 rounded-full blur-[100px]"></div>
-            <div class="absolute w-96 h-96 border border-primary/20 rounded-full animate-[spin_20s_linear_infinite]"></div>
             <div class="w-64 h-64 rounded-full bg-gradient-to-br from-primary via-cyan-500 to-blue-900 flex items-center justify-center orb-glow border border-white/20 relative overflow-hidden" id="central-orb">
                 <div class="flex items-end gap-1 h-20" id="wave-container">
                     <div class="w-1 bg-white h-4 wave-bar"></div>
@@ -131,10 +137,8 @@
                 <div class="absolute -left-[1px] top-0 h-12 w-[2px] bg-primary"></div>
                 <div class="text-[10px] font-headline tracking-[0.2em] text-gray-500 uppercase mb-4">Signal Telemetry</div>
                 <div class="flex flex-col gap-4">
-                    <div>
-                        <div class="flex justify-between text-[10px] mb-1"><span class="text-primary tracking-widest">CPU_LOAD</span><span id="cpu-percent">0%</span></div>
-                        <div class="w-full h-1 bg-white/5 rounded-full overflow-hidden"><div id="cpu-bar" class="h-full bg-primary w-0 transition-all duration-500"></div></div>
-                    </div>
+                    <div class="flex justify-between text-[10px] mb-1"><span class="text-primary tracking-widest">CPU_LOAD</span><span id="cpu-percent">0%</span></div>
+                    <div class="w-full h-1 bg-white/5 rounded-full overflow-hidden"><div id="cpu-bar" class="h-full bg-primary w-0 transition-all duration-500"></div></div>
                 </div>
             </div>
             <div class="glass-panel w-72 p-6">
@@ -154,12 +158,17 @@
         let isFocus = false;
         function toggleFocus() {
             isFocus = !isFocus;
-            const elements = ["top-nav", "news-hud", "telemetry-time", "right-hud", "left-hud", "sync-indicator"];
+            const elements = ["news-hud", "telemetry-time", "right-hud", "left-hud", "sync-indicator"];
             elements.forEach(id => {
                 const el = document.getElementById(id);
                 if (isFocus) el.classList.add('focus-hidden');
                 else el.classList.remove('focus-hidden');
             });
+        }
+
+        eel.expose(update_language);
+        function update_language(lang) {
+            document.getElementById('current-lang').innerText = lang.toUpperCase();
         }
 
         eel.expose(set_privacy_shield);
@@ -173,10 +182,10 @@
         function toggleMatrix() { const layer = document.getElementById('matrix-layer'); if (layer.classList.contains('opacity-0')) { layer.classList.remove('opacity-0', 'pointer-events-none', 'scale-110'); layer.classList.add('opacity-100', 'scale-100'); } else { layer.classList.add('opacity-0', 'pointer-events-none', 'scale-110'); layer.classList.remove('opacity-100', 'scale-100'); } }
 
         eel.expose(show_alert);
-        function show_alert(msg) { const alert = document.getElementById('alert-layer'); document.getElementById('alert-msg').innerText = msg; alert.classList.remove('translate-x-[150%]'); setTimeout(() => alert.classList.add('translate-x-[150%]'), 5000); }
+        function show_alert(msg) { const alert = document.getElementById('alert-layer'); if(!alert) return; document.getElementById('alert-msg').innerText = msg; alert.classList.remove('translate-x-[150%]'); setTimeout(() => alert.classList.add('translate-x-[150%]'), 5000); }
 
         eel.expose(update_media);
-        function update_media(title, artist) { document.getElementById('media-title').innerText = title.toUpperCase(); document.getElementById('media-artist').innerText = artist.toUpperCase(); }
+        function update_media(title, artist) { document.getElementById('media-title').innerText = title.toUpperCase(); }
 
         eel.expose(update_briefing);
         function update_briefing(news, temp, condition) { 
