@@ -3,6 +3,7 @@ import sys
 import time
 import threading
 import eel
+import psutil
 from engine.speech import speak, listen
 from engine.command import execute_command
 from engine.face_auth import authenticate
@@ -23,6 +24,8 @@ def trigger_auth():
         # Transition to Dashboard
         eel.show_dashboard()() # Call JS function
         threading.Thread(target=jarvis_loop, daemon=True).start()
+        # Start Telemetry
+        threading.Thread(target=telemetry_worker, daemon=True).start()
     else:
         eel.auth_failed()()
 
@@ -44,7 +47,7 @@ def jarvis_loop():
     """Main background loop for processing voice commands."""
     print("Jarvis Logic Node: Online.")
     
-    wake_words = ['jarvis', 'javis', 'javis', 'hey jarvis', 'hi jarvis']
+    wake_words = ['jarvis', 'javis', 'jarvis', 'hey jarvis', 'hi jarvis']
     
     while True:
         # Communicate to UI that we are listening
@@ -72,6 +75,18 @@ def jarvis_loop():
                     execute_command(query_lower)
             
         eel.sleep(0.5)
+
+def telemetry_worker():
+    """Background thread to stream system stats to the UI."""
+    while True:
+        try:
+            cpu = psutil.cpu_percent()
+            ram = psutil.virtual_memory().percent
+            # Optional: Add temp if supported
+            eel.update_telemetry(cpu, ram)()
+        except:
+            pass
+        eel.sleep(2.0) # Update every 2 seconds
 
 # ──────────────────────────────────────────────
 # Entry Point
