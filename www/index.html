@@ -12,17 +12,8 @@
             darkMode: "class",
             theme: {
               extend: {
-                colors: {
-                  "surface-container": "#1a1919",
-                  "primary": "#99f7ff",
-                  "background": "#0e0e0e",
-                  "on-surface": "#ffffff",
-                  "surface-variant": "#262626",
-                },
-                fontFamily: {
-                  "headline": ["Space Grotesk"],
-                  "body": ["Inter"],
-                },
+                colors: { "surface-container": "#1a1919", "primary": "#99f7ff", "background": "#0e0e0e", "on-surface": "#ffffff", "surface-variant": "#262626" },
+                fontFamily: { "headline": ["Space Grotesk"], "body": ["Inter"] },
               },
             },
           }
@@ -33,6 +24,7 @@
         .orb-glow { box-shadow: 0 0 80px 20px rgba(153, 247, 255, 0.2); }
         .text-glow { text-shadow: 0 0 10px rgba(153, 247, 255, 0.5); }
         .wave-bar { transition: height 0.1s ease; }
+        .matrix-overlay { transition: opacity 0.5s ease, transform 0.5s ease; }
     </style>
 </head>
 <body class="font-body selection:bg-primary/30">
@@ -41,6 +33,7 @@
             <div class="text-xl font-bold tracking-tighter text-white font-headline">JARVIS_OS</div>
             <nav class="hidden md:flex gap-6">
                 <a class="font-space-grotesk tracking-widest uppercase text-xs text-cyan-400 border-b-2 border-cyan-400" href="#">SYNOPSIS</a>
+                <a class="font-space-grotesk tracking-widest uppercase text-xs text-gray-500 hover:text-cyan-300 cursor-pointer" onclick="toggleMatrix()">TASK_MATRIX</a>
                 <a class="font-space-grotesk tracking-widest uppercase text-xs text-gray-500 hover:text-cyan-300" href="vision.html">VISION_HUD</a>
             </nav>
         </div>
@@ -48,6 +41,40 @@
             <span class="material-symbols-outlined text-cyan-400 cursor-pointer" onclick="eel.shutdown_jarvis()">power_settings_new</span>
         </div>
     </header>
+
+    <!-- TASK MATRIX OVERLAY -->
+    <div id="matrix-layer" class="fixed inset-0 z-[60] bg-black/90 backdrop-blur-2xl flex flex-col items-center justify-center matrix-overlay opacity-0 pointer-events-none transform scale-110">
+        <div class="absolute top-10 right-10 cursor-pointer" onclick="toggleMatrix()">
+            <span class="material-symbols-outlined text-primary text-4xl">close</span>
+        </div>
+        <div class="grid grid-cols-4 gap-8 p-20 max-w-5xl">
+            <!-- App Shortcuts -->
+            <div class="flex flex-col items-center gap-4 group cursor-pointer" onclick="eel.manual_command('open chrome')">
+                <div class="w-20 h-20 bg-primary/10 border border-primary/20 rounded-xl flex items-center justify-center group-hover:bg-primary/30 transition-all">
+                    <span class="material-symbols-outlined text-primary text-4xl">public</span>
+                </div>
+                <span class="text-xs font-headline tracking-widest uppercase text-gray-500 group-hover:text-primary transition-all">WEB_NETWORK</span>
+            </div>
+            <div class="flex flex-col items-center gap-4 group cursor-pointer" onclick="eel.manual_command('open notepad')">
+                <div class="w-20 h-20 bg-primary/10 border border-primary/20 rounded-xl flex items-center justify-center group-hover:bg-primary/30 transition-all">
+                    <span class="material-symbols-outlined text-primary text-4xl">edit_note</span>
+                </div>
+                <span class="text-xs font-headline tracking-widest uppercase text-gray-500 group-hover:text-primary transition-all">CODE_LOGS</span>
+            </div>
+            <div class="flex flex-col items-center gap-4 group cursor-pointer" onclick="eel.manual_command('open calculator')">
+                <div class="w-20 h-20 bg-primary/10 border border-primary/20 rounded-xl flex items-center justify-center group-hover:bg-primary/30 transition-all">
+                    <span class="material-symbols-outlined text-primary text-4xl">calculate</span>
+                </div>
+                <span class="text-xs font-headline tracking-widest uppercase text-gray-500 group-hover:text-primary transition-all">CALCULATOR</span>
+            </div>
+            <div class="flex flex-col items-center gap-4 group cursor-pointer" onclick="eel.manual_command('lock system')">
+                <div class="w-20 h-20 bg-primary/10 border border-primary/20 rounded-xl flex items-center justify-center group-hover:bg-primary/30 transition-all">
+                    <span class="material-symbols-outlined text-primary text-4xl">lock</span>
+                </div>
+                <span class="text-xs font-headline tracking-widest uppercase text-gray-500 group-hover:text-primary transition-all">SECURE_ID</span>
+            </div>
+        </div>
+    </div>
 
     <main class="h-screen w-full relative flex items-center justify-center">
         <!-- TOP LEFT OVERLAY -->
@@ -81,18 +108,42 @@
             </div>
         </div>
 
-        <!-- STATUS OVERLAY -->
-        <div class="absolute bottom-10 left-1/2 -translate-x-1/2 text-center z-20">
-            <div id="jarvis-status" class="text-xs font-headline tracking-[0.6em] text-primary animate-pulse uppercase">SYSTEM_STANDBY</div>
-        </div>
-
-        <!-- DETECTED INTENT CARD -->
-        <div class="absolute left-10 top-1/2 -translate-y-1/2 z-20">
+        <!-- TELEMETRY CARD -->
+        <div class="absolute left-10 top-1/2 -translate-y-1/2 z-20 flex flex-col gap-6">
             <div class="glass-panel w-72 p-6 rounded-none relative">
                 <div class="absolute -left-[1px] top-0 h-12 w-[2px] bg-primary"></div>
+                <div class="text-[10px] font-headline tracking-[0.2em] text-gray-500 uppercase mb-4">Signal Telemetry</div>
+                <div class="flex flex-col gap-4">
+                    <div>
+                        <div class="flex justify-between text-[10px] mb-1">
+                            <span class="text-primary tracking-widest">CPU_LOAD</span>
+                            <span id="cpu-percent">0%</span>
+                        </div>
+                        <div class="w-full h-1 bg-white/5 rounded-full overflow-hidden">
+                            <div id="cpu-bar" class="h-full bg-primary w-0 transition-all duration-500"></div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="flex justify-between text-[10px] mb-1">
+                            <span class="text-primary tracking-widest">RAM_USAGE</span>
+                            <span id="ram-percent">0%</span>
+                        </div>
+                        <div class="w-full h-1 bg-white/5 rounded-full overflow-hidden">
+                            <div id="ram-bar" class="h-full bg-blue-400 w-0 transition-all duration-500"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="glass-panel w-72 p-6">
                 <div class="text-[10px] font-headline tracking-[0.2em] text-gray-500 uppercase mb-4">Detected Intent</div>
                 <div id="intent-display" class="text-xl font-headline text-white tracking-tighter">WAITING_FOR_INPUT...</div>
             </div>
+        </div>
+
+        <!-- STATUS OVERLAY -->
+        <div class="absolute bottom-10 left-1/2 -translate-x-1/2 text-center z-20">
+            <div id="jarvis-status" class="text-xs font-headline tracking-[0.6em] text-primary animate-pulse uppercase">SYSTEM_STANDBY</div>
         </div>
     </main>
 
@@ -103,6 +154,18 @@
             const now = new Date();
             document.getElementById('system-time').innerText = now.getHours().toString().padStart(2, '0') + ":" + now.getMinutes().toString().padStart(2, '0');
         }, 1000);
+
+        // Matrix Toggle
+        function toggleMatrix() {
+            const layer = document.getElementById('matrix-layer');
+            if (layer.classList.contains('opacity-0')) {
+                layer.classList.remove('opacity-0', 'pointer-events-none', 'scale-110');
+                layer.classList.add('opacity-100', 'scale-100');
+            } else {
+                layer.classList.add('opacity-0', 'pointer-events-none', 'scale-110');
+                layer.classList.remove('opacity-100', 'scale-100');
+            }
+        }
 
         // Wave Animation Logic
         const bars = document.querySelectorAll('.wave-bar');
@@ -129,20 +192,22 @@
         function update_status(statusMsg) {
             const statusEl = document.getElementById('jarvis-status');
             statusEl.innerText = statusMsg;
-            
-            if (statusMsg === "LISTENING") {
-                startWave();
-            } else if (statusMsg === "PROCESSING") {
-                bars.forEach(bar => bar.style.height = '40px'); // Static high wave
-            } else {
-                stopWave();
-            }
+            if (statusMsg === "LISTENING") startWave();
+            else if (statusMsg === "PROCESSING") bars.forEach(bar => bar.style.height = '40px');
+            else stopWave();
         }
 
         eel.expose(update_intent);
         function update_intent(intentText) {
             document.getElementById('intent-display').innerText = intentText.toUpperCase();
-            document.getElementById('sync-rate').innerText = (Math.random() * 2 + 97).toFixed(1) + "%";
+        }
+
+        eel.expose(update_telemetry);
+        function update_telemetry(cpu, ram) {
+            document.getElementById('cpu-percent').innerText = Math.round(cpu) + "%";
+            document.getElementById('cpu-bar').style.width = cpu + "%";
+            document.getElementById('ram-percent').innerText = Math.round(ram) + "%";
+            document.getElementById('ram-bar').style.width = ram + "%";
         }
     </script>
 </body>
