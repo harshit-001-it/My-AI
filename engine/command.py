@@ -123,6 +123,12 @@ def execute_command(query):
     # 7. IoT & Macro Protocols
     elif any(word in query for word in ['lights', 'goodnight', 'morning']):
         handle_iot(query)
+
+    elif 'focus' in query:
+        speak("Initiating Focus protocol. Hiding unnecessary HUD nodes.")
+        import eel
+        try: eel.toggleFocus()()
+        except: pass
         
     # 8. System Shutdown (Extreme Override)
     elif 'shutdown system' in query or 'terminate session' in query:

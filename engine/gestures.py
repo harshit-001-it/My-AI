@@ -22,6 +22,8 @@ class GestureProcessor:
         self.cooldown = 1.5 
         self.prev_x = 0
         self.prev_y = 0
+        self.presence_lost_count = 0
+        self.MAX_ABSENCE = 20 # 20 cycles of absence before shield
 
     def start(self):
         self.is_running = True
@@ -42,14 +44,22 @@ class GestureProcessor:
             results = self.hands.process(rgb_frame)
 
             if results.multi_hand_landmarks:
+                self.presence_lost_count = 0
+                import eel
+                try: eel.set_privacy_shield(False)()
+                except: pass
                 for hand_landmarks in results.multi_hand_landmarks:
                     gesture = self._detect_gesture(hand_landmarks)
                     if gesture and (time.time() - self.last_gesture_time > self.cooldown):
                         self._trigger_action(gesture)
                         self.last_gesture_time = time.time()
-                    
-                    # Track movement for swipes/slides
                     self._track_movement(hand_landmarks)
+            else:
+                self.presence_lost_count += 1
+                if self.presence_lost_count > self.MAX_ABSENCE:
+                    import eel
+                    try: eel.set_privacy_shield(True)()
+                    except: pass
 
             # In production, we don't need a debug window unless requested
             # if cv2.waitKey(1) & 0xFF == ord('q'): break
