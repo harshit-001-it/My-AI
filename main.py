@@ -10,6 +10,7 @@ from engine.command import execute_command
 from engine.face_auth import authenticate
 from engine.gestures import start_gestures
 from engine.intelligence import get_briefing
+from engine.proactive import get_proactive_suggestion
 
 # Configuration
 eel.init('www')
@@ -30,6 +31,7 @@ def trigger_auth():
         threading.Thread(target=telemetry_worker, daemon=True).start()
         threading.Thread(target=media_sensing_worker, daemon=True).start()
         threading.Thread(target=intelligence_worker, daemon=True).start()
+        threading.Thread(target=proactive_worker, daemon=True).start()
     else:
         eel.auth_failed()()
 
@@ -121,13 +123,25 @@ def intelligence_worker():
     while True:
         try:
             briefing = get_briefing()
-            # Push top headline and weather
             top_news = briefing['news'][0] if briefing['news'] else "GRID_QUIET"
             weather = briefing['weather']
             eel.update_briefing(top_news, weather['temp'], weather['condition'])()
         except:
             pass
-        eel.sleep(300.0) # Check every 5 minutes
+        eel.sleep(300.0)
+
+def proactive_worker():
+    """Monitors system for proactive suggestions."""
+    while True:
+        try:
+            suggestion = get_proactive_suggestion()
+            if suggestion:
+                speak(suggestion)
+                # Also show as alert in UI
+                eel.show_alert(suggestion[:50] + "...")()
+        except:
+            pass
+        eel.sleep(600.0) # Check every 10 minutes
 
 # ──────────────────────────────────────────────
 # Entry Point
