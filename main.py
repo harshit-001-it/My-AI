@@ -9,6 +9,7 @@ from engine.speech import speak, listen
 from engine.command import execute_command
 from engine.face_auth import authenticate
 from engine.gestures import start_gestures
+from engine.intelligence import get_briefing
 
 # Configuration
 eel.init('www')
@@ -28,6 +29,7 @@ def trigger_auth():
         # Start Workers
         threading.Thread(target=telemetry_worker, daemon=True).start()
         threading.Thread(target=media_sensing_worker, daemon=True).start()
+        threading.Thread(target=intelligence_worker, daemon=True).start()
     else:
         eel.auth_failed()()
 
@@ -94,7 +96,6 @@ def media_sensing_worker():
     last_media = ""
     while True:
         try:
-            # Heuristic for active media windows
             all_windows = gw.getAllTitles()
             media_apps = ['Spotify', 'YouTube', 'VLC', 'Media Player', 'Chrome']
             active_media = "NO_ACTIVE_MEDIA"
@@ -113,7 +114,20 @@ def media_sensing_worker():
                 last_media = active_media
         except:
             pass
-        eel.sleep(5.0) # Polling every 5 seconds
+        eel.sleep(5.0)
+
+def intelligence_worker():
+    """Periodically fetches and streams news/weather briefings."""
+    while True:
+        try:
+            briefing = get_briefing()
+            # Push top headline and weather
+            top_news = briefing['news'][0] if briefing['news'] else "GRID_QUIET"
+            weather = briefing['weather']
+            eel.update_briefing(top_news, weather['temp'], weather['condition'])()
+        except:
+            pass
+        eel.sleep(300.0) # Check every 5 minutes
 
 # ──────────────────────────────────────────────
 # Entry Point
