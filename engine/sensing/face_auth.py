@@ -11,13 +11,22 @@ VOICE_PIN = str(get_setting("voice_pin", "1010"))
 class SecurityHub:
     def __init__(self):
         # Initialize MediaPipe Face Detection
-        self.mp_face_detection = mp.solutions.face_detection
-        self.face_detector = self.mp_face_detection.FaceDetection(
-            model_selection=0, min_detection_confidence=0.8
-        )
+        try:
+            self.mp_face_detection = mp.solutions.face_detection
+            self.face_detector = self.mp_face_detection.FaceDetection(
+                model_selection=0, min_detection_confidence=0.8
+            )
+        except AttributeError:
+            self.mp_face_detection = None
+            self.face_detector = None
 
     def face_scan(self):
         """Perform a highly optimized biometric face presence scan."""
+        if self.face_detector is None:
+            print("Security Hub: MediaPipe solutions unavailable. Bypassing face scan, falling back to Voice PIN.")
+            speak("Face scanning node is offline. Switching to voice-only fallback.")
+            return self.voice_pin_verification()
+
         speak("Scanning physical presence grid.")
         cap = cv2.VideoCapture(0)
         start_time = time.time()

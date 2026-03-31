@@ -5,12 +5,17 @@ import mediapipe as mp
 from engine.core.command import execute_command
 from engine.io.speech import speak
 
-# MediaPipe Initialization
-mp_hands = mp.solutions.hands
-mp_draw = mp.solutions.drawing_utils
+try:
+    mp_hands = mp.solutions.hands
+    mp_draw = mp.solutions.drawing_utils
+except AttributeError:
+    mp_hands = None
+    mp_draw = None
 
 class GestureProcessor:
     def __init__(self):
+        if mp_hands is None:
+            raise Exception("MediaPipe 'solutions' not supported in this Python version.")
         self.hands = mp_hands.Hands(
             static_image_mode=False,
             max_num_hands=1,

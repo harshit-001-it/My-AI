@@ -52,9 +52,11 @@
 ---
 
 ## 🛠️ Environment & Setup
-- **Dependencies**: Listed in `requirements.txt`. Automatic installation is handled by `main.py`.
+- **Backend & Python version**: Native support for Python 3.13+
+- **Dependencies**: Listed in `requirements.txt`. Core modules include `psutil` and `eel`.
+- **MediaPipe Fallback**: The vision modules (`gestures.py`, `face_auth.py`) gracefully fallback to Voice PIN and disable tracking when the legacy `solutions` API isn't available (common on newer Python 3.13 environments).
 - **Hardware**: Requires a Microphone and Camera.
-- **Languages**: Default recognition is `en-IN`. Response language defaults to `en` but shifts to `hi` if Hindi is detected.
+- **Languages**: Default recognition is `en-IN`. Response language shifts depending on voice triggers.
 
 ---
 

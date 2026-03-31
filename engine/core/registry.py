@@ -29,6 +29,10 @@ def update_setting(key, value):
     data[key] = value
     save_registry(data)
 
+def get_setting(key, default_value=None):
+    data = load_registry()
+    return data.get(key, default_value)
+
 def add_task(task_desc):
     data = load_registry()
     data["task_history"].append({
