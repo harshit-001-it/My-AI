@@ -11,6 +11,8 @@ deep-translator
 pygame
 psutil
 pygetwindow
+beautifulsoup4
+lxml
 
 # Voice & Face & Gestures
 SpeechRecognition
@@ -18,3 +20,4 @@ PyAudio
 edge-tts
 setuptools<71
 mediapipe
+face-recognition

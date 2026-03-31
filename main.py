@@ -1,7 +1,22 @@
 import os
+import subprocess
 import sys
+
+
+def install_dependencies():
+    """Ensures all required packages are present before launch."""
+    try:
+        print("Niva Core: Checking neural dependencies...")
+        subprocess.check_call(
+            [sys.executable, "-m", "pip", "install", "-q", "-r", "requirements.txt"]
+        )
+    except Exception:
+        pass
+
+
+install_dependencies()
+
 import threading
-import time
 
 import eel
 import psutil
@@ -33,6 +48,7 @@ def trigger_auth():
         eel.show_dashboard()()  # type: ignore # Call JS function
         threading.Thread(target=niva_loop, daemon=True).start()
         # Start Workers
+        start_gestures()
         threading.Thread(target=telemetry_worker, daemon=True).start()
         threading.Thread(target=media_sensing_worker, daemon=True).start()
         threading.Thread(target=intelligence_worker, daemon=True).start()
@@ -99,7 +115,7 @@ def telemetry_worker():
             cpu = psutil.cpu_percent()
             ram = psutil.virtual_memory().percent
             eel.update_telemetry(cpu, ram)()  # type: ignore
-        except:
+        except Exception:
             pass
         eel.sleep(2.0)
 
@@ -126,7 +142,7 @@ def media_sensing_worker():
             if active_media != last_media:
                 eel.update_media(active_media[:20] + "...", active_artist)()  # type: ignore
                 last_media = active_media
-        except:
+        except Exception:
             pass
         eel.sleep(5.0)
 
@@ -139,7 +155,7 @@ def intelligence_worker():
             top_news = briefing["news"][0] if briefing["news"] else "GRID_QUIET"
             weather = briefing["weather"]
             eel.update_briefing(top_news, weather["temp"], weather["condition"])()  # type: ignore
-        except:
+        except Exception:
             pass
         eel.sleep(300.0)
 
@@ -153,7 +169,7 @@ def proactive_worker():
                 speak(suggestion)
                 # Also show as alert in UI
                 eel.show_alert(suggestion[:50] + "...")()  # type: ignore
-        except:
+        except Exception:
             pass
         eel.sleep(600.0)  # Check every 10 minutes
 

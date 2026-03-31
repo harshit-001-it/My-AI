@@ -14,10 +14,11 @@
 ---
 
 ## 🏗️ Architecture & Stack
-- **Backend**: Python 3.13+
+- **Backend**: Python 3.13+ (Core Logic)
 - **Frontend**: HTML5, CSS3, JavaScript (Eel Framework)
-- **Security**: Face Recognition (dlib/OpenCV)
-- **Interaction**: pyttsx3 (Text-to-Speech) & SpeechRecognition (Google API)
+- **Security**: 2FA Security (MediaPipe Face Detection + Voice PIN Verification)
+- **Interaction**: edge-tts (Premium Neural Voices) & SpeechRecognition (Google API)
+- **Reasoning**: Gemini 1.5 Flash (Primary) with Heuristic Fallback
 - **UI Logic**: Chrome/Edge browser instance via Eel
 
 ---
@@ -30,8 +31,8 @@
 - Manages the main background loop (`niva_loop`) and wake-word detection.
 
 ### 2. `speech.py` (Voice Engine)
-- **Speak**: Uses a background thread with a queue to prevent blocking. Supports multi-language translation (via `deep-translator`).
-- **Listen**: Recognizes speech using Google Web Speech API. Includes automatic translation of foreign languages to English for system commands.
+- **Speak**: Uses a background thread with a queue. Prioritizes `edge-tts` (Neural Voices: Ryan/Madhur) with a `pyttsx3` offline fallback. Managed via `pygame` for low-latency playback.
+- **Listen**: High-sensitivity capture via `SpeechRecognition` (Google API). Supports `en-IN` and `hi-IN` with automatic cross-translation for logic processing.
 
 ### 3. `command.py` (Skill Layer)
 - Maps voice/text queries to system actions:
@@ -41,13 +42,14 @@
     - Fallback: Passes general queries to `chatbot.py`.
 
 ### 4. `face_auth.py` (Security)
-- Handles user registration (saving a reference to `engine/db/user_reference.jpg`).
-- Compares live camera feed with the reference image using `face_recognition`.
-- Gracefully bypasses security if hardware/libraries are missing.
+- Implements a streamlined **Biometric Security Grid**.
+- Uses MediaPipe for rapid human presence detection.
+- Requires a secondary **Voice PIN** (stored in `registry.json`) to grant full system clearance.
 
 ### 5. `chatbot.py` (Brain)
-- **Remote**: Optional Hugging Face integration (`Blenderbot 400M`).
-- **Local**: A robust fallback system for offline interaction, personality responses, and utility queries (time, date, jokes).
+- **Remote**: Integrated with **Gemini 1.5 Flash** for high-reasoning conversational depth.
+- **Protocol**: Forces structured JSON output for system intent extraction.
+- **Local**: Features a local intent pre-processor to handle system commands (shutdown, browser launch) instantly without API latency.
 
 ---
 
@@ -61,10 +63,10 @@
 ---
 
 ## 🚀 Future Roadmap for Agents
-1. **API Integration**: Complete the Hugging Face token integration in `chatbot.py`.
-2. **Skill Expansion**: Add more system commands like "Shutdown", "Restart", or File Explorer navigation.
-3. **UI Enhancements**: Modernize the `www/style.css` for a more premium "Star Trek" console look.
-4. **Offline NLP**: Investigate small local LLMs to replace the simple `local_fallback_chat`.
+1. **Advanced Vision**: Enhance `gestures.py` with more complex control patterns (volume sliding, window dragging).
+2. **Skill Expansion**: Add deeper system integration (File Explorer navigation, Battery management, Email drafting).
+3. **UI Enhancements**: Modernize the `www/style.css` for a more premium "Star Trek" console look with real-time telemetry graphs.
+4. **Offline NLP**: Integrate local small LLMs (like Llama 3 or Phi-3) to ensure 100% functionality without an internet connection.
 
 ---
 

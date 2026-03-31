@@ -1,14 +1,16 @@
 import os
 import time
-from engine.io.speech import speak
+
 from engine.core.registry import get_setting
+from engine.io.speech import speak
+
 
 class IoTManager:
     def __init__(self):
         self.devices = {
             "main_lights": {"status": "OFF", "level": 100},
             "security_perimeter": {"status": "ARMED", "level": 100},
-            "workspace_monitor": {"status": "ON", "level": 100}
+            "workspace_monitor": {"status": "ON", "level": 100},
         }
 
     def control_device(self, device_name, action, level=None):
@@ -17,9 +19,11 @@ class IoTManager:
             self.devices[device_name]["status"] = action
             if level is not None:
                 self.devices[device_name]["level"] = level
-            
+
             speak(f"Syncing with {device_name.replace('_', ' ')}. Action: {action}.")
-            print(f"IoT Logic: {device_name} is now {action} ({level if level else ''})")
+            print(
+                f"IoT Logic: {device_name} is now {action} ({level if level else ''})"
+            )
             return True
         return False
 
@@ -30,12 +34,15 @@ class IoTManager:
             "goodnight": [
                 {"type": "iot", "device": "main_lights", "action": "OFF"},
                 {"type": "system", "action": "lock"},
-                {"type": "speech", "text": "Goodnight, Master. Sleep well."}
+                {"type": "speech", "text": "Goodnight, Master. Sleep well."},
             ],
             "morning": [
                 {"type": "iot", "device": "main_lights", "action": "ON", "level": 50},
-                {"type": "speech", "text": "Good morning, Sir. Your schedule is synchronized."}
-            ]
+                {
+                    "type": "speech",
+                    "text": "Good morning, Sir. Your schedule is synchronized.",
+                },
+            ],
         }
 
         if macro_name in macros:
@@ -51,18 +58,25 @@ class IoTManager:
             self.control_device(step["device"], step["action"], step.get("level"))
         elif t == "system":
             if step["action"] == "lock":
-                os.system("rundll32.exe user32.dll,LockWorkStation")
+                if os.name == "nt":
+                    os.system("rundll32.exe user32.dll,LockWorkStation")
+                else:
+                    os.system("xdg-screensaver lock")
         elif t == "speech":
             speak(step["text"])
 
+
 iot = IoTManager()
+
 
 def handle_iot(query):
     query = query.lower()
-    if 'lights' in query:
-        if 'off' in query: iot.control_device("main_lights", "OFF")
-        elif 'on' in query: iot.control_device("main_lights", "ON")
-    elif 'goodnight' in query:
+    if "lights" in query:
+        if "off" in query:
+            iot.control_device("main_lights", "OFF")
+        elif "on" in query:
+            iot.control_device("main_lights", "ON")
+    elif "goodnight" in query:
         iot.execute_macro("goodnight")
-    elif 'morning' in query:
+    elif "morning" in query:
         iot.execute_macro("morning")
