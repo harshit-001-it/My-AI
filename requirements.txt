@@ -20,4 +20,5 @@ PyAudio
 edge-tts
 setuptools<71
 mediapipe
+dlib-bin
 face-recognition

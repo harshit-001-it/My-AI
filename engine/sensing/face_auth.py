@@ -1,40 +1,40 @@
 import os
 import time
+
 import cv2
 import mediapipe as mp
-from engine.io.speech import speak, listen
+
 from engine.core.registry import get_setting
+from engine.io.speech import listen, speak
 
 # Security Constants
 VOICE_PIN = str(get_setting("voice_pin", "1010"))
 
+
 class SecurityHub:
     def __init__(self):
         # Initialize MediaPipe Face Detection
-        try:
-            self.mp_face_detection = mp.solutions.face_detection
-            self.face_detector = self.mp_face_detection.FaceDetection(
-                model_selection=0, min_detection_confidence=0.8
-            )
-        except AttributeError:
-            self.mp_face_detection = None
-            self.face_detector = None
+        self.mp_face_detection = mp.solutions.face_detection
+        self.face_detector = self.mp_face_detection.FaceDetection(
+            model_selection=0, min_detection_confidence=0.8
+        )
 
     def face_scan(self):
         """Perform a highly optimized biometric face presence scan."""
-        if self.face_detector is None:
-            print("Security Hub: MediaPipe solutions unavailable. Bypassing face scan, falling back to Voice PIN.")
-            speak("Face scanning node is offline. Switching to voice-only fallback.")
-            return self.voice_pin_verification()
-
         speak("Scanning physical presence grid.")
         cap = cv2.VideoCapture(0)
+        if not cap.isOpened():
+            print("Security Hub: Camera interface not found.")
+            speak("Visual sensor offline. Bypassing to voice authorization.")
+            return self.voice_pin_verification()
+
         start_time = time.time()
-        
-        while time.time() - start_time < 5: # 5 second window
+
+        while time.time() - start_time < 5:  # 5 second window
             ret, frame = cap.read()
-            if not ret: continue
-            
+            if not ret:
+                continue
+
             rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
             results = self.face_detector.process(rgb_frame)
 
@@ -44,7 +44,7 @@ class SecurityHub:
                 print("Security Hub: Face Detected via MediaPipe Core.")
                 speak("Human presence verified. Please state your authorization PIN.")
                 return self.voice_pin_verification()
-        
+
         cap.release()
         speak("No human signatures detected. Security protocols engaged.")
         return False
@@ -61,10 +61,13 @@ class SecurityHub:
             else:
                 attempts -= 1
                 if attempts > 0:
-                    speak(f"Access denied. {attempts} attempts remaining. Re-state PIN.")
+                    speak(
+                        f"Access denied. {attempts} attempts remaining. Re-state PIN."
+                    )
                 else:
                     speak("Authorization failed. Lockdown initiated.")
         return False
+
 
 def authenticate():
     hub = SecurityHub()

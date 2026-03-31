@@ -57,23 +57,30 @@ def get_niva_response(query):
             response = requests.post(url, json=payload, timeout=8)
 
             if response.status_code == 200:
-                raw_text = response.json()["candidates"][0]["content"]["parts"][0][
-                    "text"
-                ]
-                # Strip markdown code blocks if any
-                if "```json" in raw_text:
-                    raw_text = raw_text.split("```json")[1].split("```")[0].strip()
-                elif "```" in raw_text:
-                    raw_text = raw_text.split("```")[1].split("```")[0].strip()
+                res_data = response.json()
+                if "candidates" in res_data and res_data["candidates"]:
+                    raw_text = res_data["candidates"][0]["content"]["parts"][0]["text"]
+                    # Strip markdown code blocks if any
+                    if "```json" in raw_text:
+                        raw_text = raw_text.split("```json")[1].split("```")[0].strip()
+                    elif "```" in raw_text:
+                        raw_text = raw_text.split("```")[1].split("```")[0].strip()
 
-                # Validate JSON
-                parsed = json.loads(raw_text)
+                    try:
+                        # Validate JSON
+                        parsed = json.loads(raw_text)
 
-                # Update memory
-                if parsed.get("type") == "message":
-                    _update_memory(query, parsed["content"])
+                        # Update memory
+                        if parsed.get("type") == "message":
+                            _update_memory(query, parsed["content"])
 
-                return raw_text
+                        return json.dumps(parsed)
+                    except json.JSONDecodeError:
+                        print(
+                            "Niva Brain: LLM returned non-JSON response. Attempting repair."
+                        )
+                        repair_msg = {"type": "message", "content": raw_text.strip()}
+                        return json.dumps(repair_msg)
         except Exception as e:
             print(f"Niva Neural Fallback: {e}")
 

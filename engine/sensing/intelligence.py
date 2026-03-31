@@ -1,11 +1,12 @@
 import requests
 from bs4 import BeautifulSoup
 
+
 class IntelligenceHub:
     def __init__(self):
         self.news_sources = {
             "global": "https://news.google.com/rss?hl=en-US&gl=US&ceid=US:en",
-            "tech": "https://feeds.feedburner.com/TechCrunch/"
+            "tech": "https://feeds.feedburner.com/TechCrunch/",
         }
         self.last_weather = "STORM_SENSING_INACTIVE"
 
@@ -15,11 +16,15 @@ class IntelligenceHub:
             url = self.news_sources.get(category, self.news_sources["global"])
             response = requests.get(url, timeout=5)
             soup = BeautifulSoup(response.content, features="xml")
-            
-            items = soup.find_all('item')[:5] # Top 5 headlines
-            headlines = [item.title.text for item in items]
-            
-            print(f"Intelligence: Synchronising news headlines for category {category}.")
+
+            items = soup.find_all("item")[:5]  # Top 5 headlines
+            headlines = [
+                item.title.text if item.title else "GRID_QUIET" for item in items
+            ]
+
+            print(
+                f"Intelligence: Synchronising news headlines for category {category}."
+            )
             return headlines
         except Exception:
             return ["NEWS_NODE_OFFLINE: Re-attempting sync..."]
@@ -32,15 +37,18 @@ class IntelligenceHub:
             "temp": "24°C",
             "condition": "CLEAR_SKIES",
             "humidity": "45%",
-            "wind": "12km/h"
+            "wind": "12km/h",
         }
 
+
 intelligence = IntelligenceHub()
+
 
 def get_briefing():
     news = intelligence.fetch_news()
     weather = intelligence.fetch_weather()
     return {"news": news, "weather": weather}
+
 
 if __name__ == "__main__":
     print("Intelligence Hub Test:")

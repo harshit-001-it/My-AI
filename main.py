@@ -45,7 +45,7 @@ def trigger_auth():
     print("Security Hub: Initiating Biometric Scan...")
     if authenticate():
         # Transition to Dashboard
-        eel.show_dashboard()()  # type: ignore # Call JS function
+        eel.show_dashboard()  # type: ignore # Call JS function
         threading.Thread(target=niva_loop, daemon=True).start()
         # Start Workers
         start_gestures()
@@ -54,7 +54,7 @@ def trigger_auth():
         threading.Thread(target=intelligence_worker, daemon=True).start()
         threading.Thread(target=proactive_worker, daemon=True).start()
     else:
-        eel.auth_failed()()  # type: ignore
+        eel.auth_failed()  # type: ignore
 
 
 @eel.expose
@@ -82,7 +82,7 @@ def niva_loop():
 
     while True:
         # Communicate to UI that we are listening
-        eel.update_status("IDLE")()  # type: ignore
+        eel.update_status("IDLE")  # type: ignore
         query = listen()
 
         if query != "None":
@@ -97,8 +97,8 @@ def niva_loop():
                     break
 
             if has_wake_word:
-                eel.update_status("PROCESSING")()  # type: ignore
-                eel.update_intent(query_lower if query_lower else "WAKE_WORD_TRIGGER")()  # type: ignore
+                eel.update_status("PROCESSING")  # type: ignore
+                eel.update_intent(query_lower if query_lower else "WAKE_WORD_TRIGGER")  # type: ignore
                 if not query_lower:
                     speak("I am here, Sir. How can I assist?")
                 else:
@@ -114,7 +114,7 @@ def telemetry_worker():
         try:
             cpu = psutil.cpu_percent()
             ram = psutil.virtual_memory().percent
-            eel.update_telemetry(cpu, ram)()  # type: ignore
+            eel.update_telemetry(cpu, ram)  # type: ignore
         except Exception:
             pass
         eel.sleep(2.0)
@@ -140,7 +140,7 @@ def media_sensing_worker():
                     break
 
             if active_media != last_media:
-                eel.update_media(active_media[:20] + "...", active_artist)()  # type: ignore
+                eel.update_media(active_media[:20] + "...", active_artist)  # type: ignore
                 last_media = active_media
         except Exception:
             pass
@@ -154,7 +154,7 @@ def intelligence_worker():
             briefing = get_briefing()
             top_news = briefing["news"][0] if briefing["news"] else "GRID_QUIET"
             weather = briefing["weather"]
-            eel.update_briefing(top_news, weather["temp"], weather["condition"])()  # type: ignore
+            eel.update_briefing(top_news, weather["temp"], weather["condition"])  # type: ignore
         except Exception:
             pass
         eel.sleep(300.0)
@@ -168,7 +168,7 @@ def proactive_worker():
             if suggestion:
                 speak(suggestion)
                 # Also show as alert in UI
-                eel.show_alert(suggestion[:50] + "...")()  # type: ignore
+                eel.show_alert(suggestion[:50] + "...")  # type: ignore
         except Exception:
             pass
         eel.sleep(600.0)  # Check every 10 minutes

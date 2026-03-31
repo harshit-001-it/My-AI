@@ -1,34 +1,39 @@
-import cv2
 import threading
 import time
+
+import cv2
 import mediapipe as mp
+
 from engine.core.command import execute_command
 from engine.io.speech import speak
 
 try:
-    mp_hands = mp.solutions.hands
-    mp_draw = mp.solutions.drawing_utils
+    mp_hands = mp.solutions.hands  # type: ignore
+    mp_draw = mp.solutions.drawing_utils  # type: ignore
 except AttributeError:
     mp_hands = None
     mp_draw = None
 
+
 class GestureProcessor:
     def __init__(self):
         if mp_hands is None:
-            raise Exception("MediaPipe 'solutions' not supported in this Python version.")
+            raise Exception(
+                "MediaPipe 'solutions' not supported in this Python version."
+            )
         self.hands = mp_hands.Hands(
             static_image_mode=False,
             max_num_hands=1,
             min_detection_confidence=0.7,
-            min_tracking_confidence=0.5
+            min_tracking_confidence=0.5,
         )
         self.is_running = False
         self.last_gesture_time = 0
-        self.cooldown = 1.5 
+        self.cooldown = 1.5
         self.prev_x = 0
         self.prev_y = 0
         self.presence_lost_count = 0
-        self.MAX_ABSENCE = 20 # 20 cycles of absence before shield
+        self.MAX_ABSENCE = 20  # 20 cycles of absence before shield
 
     def start(self):
         self.is_running = True
@@ -42,7 +47,8 @@ class GestureProcessor:
         cap = cv2.VideoCapture(0)
         while self.is_running:
             ret, frame = cap.read()
-            if not ret: continue
+            if not ret:
+                continue
 
             frame = cv2.flip(frame, 1)
             rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
@@ -51,11 +57,16 @@ class GestureProcessor:
             if results.multi_hand_landmarks:
                 self.presence_lost_count = 0
                 import eel
-                try: eel.set_privacy_shield(False)()
-                except: pass
+
+                try:
+                    eel.set_privacy_shield(False)  # type: ignore
+                except Exception:
+                    pass
                 for hand_landmarks in results.multi_hand_landmarks:
                     gesture = self._detect_gesture(hand_landmarks)
-                    if gesture and (time.time() - self.last_gesture_time > self.cooldown):
+                    if gesture and (
+                        time.time() - self.last_gesture_time > self.cooldown
+                    ):
                         self._trigger_action(gesture)
                         self.last_gesture_time = time.time()
                     self._track_movement(hand_landmarks)
@@ -63,8 +74,11 @@ class GestureProcessor:
                 self.presence_lost_count += 1
                 if self.presence_lost_count > self.MAX_ABSENCE:
                     import eel
-                    try: eel.set_privacy_shield(True)()
-                    except: pass
+
+                    try:
+                        eel.set_privacy_shield(True)  # type: ignore
+                    except Exception:
+                        pass
 
             # In production, we don't need a debug window
             # if cv2.waitKey(1) & 0xFF == ord('q'): break
@@ -79,11 +93,15 @@ class GestureProcessor:
         pinky_up = lm[20].y < lm[18].y
         thumb_up = lm[4].x > lm[3].x if lm[4].x > 0.5 else lm[4].x < lm[3].x
 
-        if index_up and middle_up and ring_up and pinky_up: return "STOP"
-        if index_up and middle_up and not ring_up and not pinky_up: return "PEACE"
-        dist_it = ((lm[4].x - lm[8].x)**2 + (lm[4].y - lm[8].y)**2)**0.5
-        if dist_it < 0.05 and not middle_up and not ring_up: return "PINCH"
-        if thumb_up and pinky_up and not index_up and not middle_up and not ring_up: return "CALL"
+        if index_up and middle_up and ring_up and pinky_up:
+            return "STOP"
+        if index_up and middle_up and not ring_up and not pinky_up:
+            return "PEACE"
+        dist_it = ((lm[4].x - lm[8].x) ** 2 + (lm[4].y - lm[8].y) ** 2) ** 0.5
+        if dist_it < 0.05 and not middle_up and not ring_up:
+            return "PINCH"
+        if thumb_up and pinky_up and not index_up and not middle_up and not ring_up:
+            return "CALL"
         return None
 
     def _track_movement(self, landmarks):
@@ -102,6 +120,7 @@ class GestureProcessor:
             execute_command("calculator open")
         elif gesture == "CALL":
             speak("Initiating secure communication link.")
+
 
 def start_gestures():
     try:
